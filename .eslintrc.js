@@ -8,6 +8,7 @@ module.exports = {
     'eslint:recommended',
     'plugin:react/recommended',
     'plugin:@typescript-eslint/recommended',
+    'xo',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -19,6 +20,7 @@ module.exports = {
   },
   plugins: ['react', '@typescript-eslint'],
   rules: {
+    curly: ['error', 'multi'],
     indent: ['error', 2],
     'linebreak-style': ['error', 'unix'],
     quotes: ['error', 'single'],
