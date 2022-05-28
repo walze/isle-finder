@@ -2,12 +2,16 @@ export type NonEmptyArray<T> = [T, ...T[]];
 
 export type Grid = NonEmptyArray<NonEmptyArray<Node>>
 
+export type NodeType = 'start' | 'end' | 'path' | 'wall'
+
 export type Node = {
   f: number
   g: number
   h: number
   x: number
   y: number
-  path: boolean
+  px: number
+  py: number
+  type: NodeType
   parent: Node | null
 }

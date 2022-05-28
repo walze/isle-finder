@@ -1,5 +1,5 @@
 
-import {Node, Grid} from './index.d'
+import {Node, Grid} from './types'
 
 const heuristic = (a: Node, b: Node) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
 
