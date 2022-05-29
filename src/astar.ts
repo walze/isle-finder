@@ -1,22 +1,22 @@
 
 import {Node, Grid} from './types'
 
-const heuristic = (a: Node, b: Node) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
+const heuristic = (a: Node, b: Node) => Math.sqrt(((a.x - b.x) ** 2) + ((a.y - b.y) ** 2))
 
-export const getNeighbors = (g: Grid) => (n: Node) => {
-  const {x, y} = n
+export const getNeighbors = (n: Node) => (g: Grid) => {
+  const {px, py} = n
   const neighbors: Node[] = []
 
-  if (x > 0) neighbors.push(g[y]![x - 1]!)
-  if (x < g[y]!.length - 1) neighbors.push(g[y]![x + 1]!)
-  if (y > 0) neighbors.push(g[y - 1]![x]!)
-  if (y < g[y]!.length - 1) neighbors.push(g[y + 1]![x]!)
+  if (px > 0) neighbors.push(g[py]![px - 1]!)
+  if (px < g[py]!.length - 1) neighbors.push(g[py]![px + 1]!)
+  if (py > 0) neighbors.push(g[py - 1]![px]!)
+  if (py < g[py]!.length - 1) neighbors.push(g[py + 1]![px]!)
 
   return neighbors
 }
 
 // Astar using Sets
-export const astar = (g: Grid) => ([start, end]: [Node, Node]): Node[] => {
+export const astar = (grid: Grid) => ([start, end]: [Node, Node]): Node[] => {
   const openSet = new Set<Node>([start])
   const closedSet = new Set<Node>()
 
@@ -26,17 +26,23 @@ export const astar = (g: Grid) => ([start, end]: [Node, Node]): Node[] => {
     openSet.delete(current)
     closedSet.add(current)
 
-    for (const neighbor of getNeighbors(g)(g[current.x]![current.y]!)) {
-      if (closedSet.has(neighbor) || !neighbor.path) continue
+    const neighbors = getNeighbors(grid[current.py]![current.px]!)
+
+    for (const neighbor of neighbors(grid)) {
+      if (closedSet.has(neighbor) || !neighbor.path)
+        continue
 
       const gScore = current.g + 1
 
-      if (!openSet.has(neighbor) || gScore < neighbor.g) {
+      if (gScore < neighbor.g || !openSet.has(neighbor)) {
+        // Camefrom
         neighbor.parent = current
         neighbor.g = gScore
         neighbor.h = heuristic(neighbor, end)
         neighbor.f = neighbor.g + neighbor.h
-        if (!openSet.has(neighbor)) openSet.add(neighbor)
+
+        if (!openSet.has(neighbor))
+          openSet.add(neighbor)
       }
     }
   }
@@ -47,6 +53,7 @@ export const astar = (g: Grid) => ([start, end]: [Node, Node]): Node[] => {
 function reconstructPath(current: Node): Node[] {
   const path: Node[] = []
   let node = current
+
   while (node.parent) {
     path.push(node)
     node = node.parent!

@@ -1,7 +1,7 @@
 import {Graphics} from 'pixi.js'
 import {from, identity, mergeMap} from 'rxjs'
-import {screenW, screenH, grid, cellW, cellH, nodeColors} from './grid'
-import {NodeType} from './types'
+import {screenW, screenH, grid, cellW, cellH, nodeColors, gridGet} from './grid'
+import {Node, NodeType} from './types'
 
 export const startPixi = (view: HTMLCanvasElement) => import('pixi.js')
   .then(({Application, Graphics}) => {
@@ -12,22 +12,23 @@ export const startPixi = (view: HTMLCanvasElement) => import('pixi.js')
       height: screenH,
     })
 
-    from(grid)
-      .pipe(
-        mergeMap(identity),
-      )
-      .subscribe(({x, y, type}) => {
-        drawNode(gfx, type, x, y)
-      })
-
     app.stage.addChild(gfx)
 
-    app.ticker.add(() => (1))
+    app.ticker.speed = 5
+    app.ticker.add(_ => {
+      from(grid)
+        .pipe(
+          mergeMap(identity),
+        )
+        .subscribe(node => {
+          drawNode(gfx, node)
+        })
+    })
   })
 
-const drawNode = (gfx: Graphics, type: NodeType, x: number, y: number) => {
-  gfx.beginFill(nodeColors[type])
-  gfx.drawRect(x + 1, y + 1, cellW - 2, cellH - 2)
+const drawNode = (gfx: Graphics, {x, y, color}: Node) => {
+  gfx.beginFill(color)
+  gfx.drawRect(x + 0.5, y + 0.5, cellW - 1, cellH - 1)
   gfx.endFill()
 }
 

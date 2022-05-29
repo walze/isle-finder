@@ -1,4 +1,5 @@
 import assert from 'assert'
+import {astar} from './astar'
 import {Grid, Node} from './types'
 
 export const nodeColors = {
@@ -11,10 +12,10 @@ export const nodeColors = {
 export const screenW = 800
 export const screenH = 800
 
-export const [gridW, gridH] = [5, 5]
+export const [gridW, gridH] = [60, 60]
 export const [cellW, cellH] = [screenW / gridW, screenH / gridH]
 
-export const makeNode = (x: number, y: number) => ({
+export const makeNode = (x: number, y: number): Node => ({
   px: x,
   py: y,
   x: x * cellW,
@@ -23,7 +24,8 @@ export const makeNode = (x: number, y: number) => ({
   g: Number.MAX_SAFE_INTEGER,
   h: Number.MAX_SAFE_INTEGER,
   parent: null,
-  type: 'path',
+  path: true,
+  color: nodeColors.path,
 })
 
 export const grid
@@ -33,6 +35,8 @@ export const grid
       y,
     )),
   ) as Grid
+
+console.log(grid)
 
 export const gridSet
   = ([x, y]: [number, number], value: Node) =>
@@ -64,5 +68,10 @@ const [start, end] = [
 export const startNode = start(grid)
 export const endNode = end(grid)
 
-startNode.type = 'start'
-endNode.type = 'end'
+startNode.color = nodeColors.start
+endNode.color = nodeColors.end
+
+astar(grid)([startNode, endNode]).forEach(node => {
+  if (node.color !== nodeColors.end)
+    node.color = 0x0000ff
+})

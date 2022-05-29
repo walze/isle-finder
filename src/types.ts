@@ -12,6 +12,7 @@ export type Node = {
   y: number
   px: number
   py: number
-  type: NodeType
+  path: boolean
+  color: number
   parent: Node | null
 }
