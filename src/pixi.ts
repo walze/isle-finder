@@ -1,7 +1,7 @@
 import {Graphics} from 'pixi.js'
-import {from, identity, mergeMap} from 'rxjs'
-import {screenW, screenH, grid, cellW, cellH, nodeColors, gridGet} from './grid'
-import {Node, NodeType} from './types'
+import {from, fromEvent, identity, map, mergeMap} from 'rxjs'
+import {screenW, screenH, grid, cellW, cellH, gridGet, nodeColors, calcPath} from './grid'
+import {Node} from './types'
 
 export const startPixi = (view: HTMLCanvasElement) => import('pixi.js')
   .then(({Application, Graphics}) => {
@@ -10,9 +10,24 @@ export const startPixi = (view: HTMLCanvasElement) => import('pixi.js')
       view,
       width: screenW,
       height: screenH,
+      backgroundColor: 0xeeeeee,
     })
 
     app.stage.addChild(gfx)
+
+    fromEvent<MouseEvent>(view, 'click')
+      .pipe(
+        map(({offsetX, offsetY}) => [
+          Math.floor(offsetX / cellW),
+          Math.floor(offsetY / cellH),
+        ] as [number, number]),
+        map(gridGet(grid)),
+      ).subscribe(n => {
+        n.color = nodeColors.wall
+        n.path = false
+
+        calcPath()
+      })
 
     app.ticker.speed = 5
     app.ticker.add(_ => {
@@ -28,7 +43,8 @@ export const startPixi = (view: HTMLCanvasElement) => import('pixi.js')
 
 const drawNode = (gfx: Graphics, {x, y, color}: Node) => {
   gfx.beginFill(color)
-  gfx.drawRect(x + 0.5, y + 0.5, cellW - 1, cellH - 1)
+  const padding = 0.5
+  gfx.drawRect(x + padding, y + padding, cellW - (padding * 2), cellH - (padding * 2))
   gfx.endFill()
 }
 

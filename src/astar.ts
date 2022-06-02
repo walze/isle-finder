@@ -1,9 +1,10 @@
 
 import {Node, Grid} from './types'
 
-const heuristic = (a: Node, b: Node) => Math.sqrt(((a.x - b.x) ** 2) + ((a.y - b.y) ** 2))
+const heuristic = (a: number, b: number) =>
+  Math.sqrt((a ** 2) + (b ** 2))
 
-export const getNeighbors = (n: Node) => (g: Grid) => {
+export const getNeighbors = (g: Grid) => (n: Node) => {
   const {px, py} = n
   const neighbors: Node[] = []
 
@@ -23,31 +24,53 @@ export const astar = (grid: Grid) => ([start, end]: [Node, Node]): Node[] => {
   while (openSet.size) {
     const current = [...openSet].reduce((a, b) => a.f < b.f ? a : b)
     if (current === end) return reconstructPath(current)
+
     openSet.delete(current)
     closedSet.add(current)
 
-    const neighbors = getNeighbors(grid[current.py]![current.px]!)
+    getNeighbors(grid)(grid[current.py]![current.px]!)
+      .forEach(neighbor => {
+        if (closedSet.has(neighbor) || !neighbor.path) return
 
-    for (const neighbor of neighbors(grid)) {
-      if (closedSet.has(neighbor) || !neighbor.path)
-        continue
+        const scores = newScores(current.g, neighbor, end)
 
-      const gScore = current.g + 1
+        if (!openSet.has(neighbor) || scores.f < neighbor.f) {
+          updateNode(neighbor)({...scores, current})
 
-      if (gScore < neighbor.g || !openSet.has(neighbor)) {
-        // Camefrom
-        neighbor.parent = current
-        neighbor.g = gScore
-        neighbor.h = heuristic(neighbor, end)
-        neighbor.f = neighbor.g + neighbor.h
-
-        if (!openSet.has(neighbor))
           openSet.add(neighbor)
-      }
-    }
+        }
+      })
   }
 
   return []
+}
+
+export const updateNode
+= (node: Node) =>
+  (
+    update: {
+    f: number,
+    g: number,
+    h: number,
+    current: Node
+  },
+  ) => {
+    const {current, f, g, h} = update
+
+    node.f = f
+    node.g = g
+    node.h = h
+    node.parent = current
+
+    return node
+  }
+
+function newScores(oldG: number, neighbor: Node, end: Node) {
+  const g = oldG + 1
+  const h = heuristic(neighbor.x - end.x, neighbor.y - end.y)
+  const f = g + h
+
+  return {f, g, h}
 }
 
 function reconstructPath(current: Node): Node[] {

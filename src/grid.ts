@@ -12,21 +12,25 @@ export const nodeColors = {
 export const screenW = 800
 export const screenH = 800
 
-export const [gridW, gridH] = [60, 60]
+export const [gridW, gridH] = [50, 50]
 export const [cellW, cellH] = [screenW / gridW, screenH / gridH]
 
-export const makeNode = (x: number, y: number): Node => ({
-  px: x,
-  py: y,
-  x: x * cellW,
-  y: y * cellH,
-  f: Number.MAX_SAFE_INTEGER,
-  g: Number.MAX_SAFE_INTEGER,
-  h: Number.MAX_SAFE_INTEGER,
-  parent: null,
-  path: true,
-  color: nodeColors.path,
-})
+export const makeNode = (x: number, y: number): Node => {
+  const r = Math.random() > 1 / 4
+
+  return {
+    px: x,
+    py: y,
+    x: x * cellW,
+    y: y * cellH,
+    f: Number.MAX_SAFE_INTEGER,
+    g: Number.MAX_SAFE_INTEGER,
+    h: Number.MAX_SAFE_INTEGER,
+    parent: null,
+    path: r,
+    color: r ? nodeColors.path : nodeColors.wall,
+  }
+}
 
 export const grid
   = Array.from({length: gridH}, (_, y) =>
@@ -35,8 +39,6 @@ export const grid
       y,
     )),
   ) as Grid
-
-console.log(grid)
 
 export const gridSet
   = ([x, y]: [number, number], value: Node) =>
@@ -49,8 +51,8 @@ export const gridSet
     }
 
 export const gridGet
-  = ([x, y]: [number, number]) =>
-    (grid: Grid): Node => {
+  = (grid: Grid) =>
+    ([y, x]: [number, number]): Node => {
       const gx = grid[x]
       assert(gx, 'cannot get grid x ' + x)
       const node = gx[y]
@@ -60,18 +62,17 @@ export const gridGet
     }
 
 // Random start and end points
-const [start, end] = [
-  gridGet([Math.floor(Math.random() * gridW), Math.floor(Math.random() * gridH)]),
-  gridGet([Math.floor(Math.random() * gridW), Math.floor(Math.random() * gridH)]),
+export const [startNode, endNode] = [
+  gridGet(grid)([Math.floor(Math.random() * gridW), Math.floor(Math.random() * gridH)]),
+  gridGet(grid)([Math.floor(Math.random() * gridW), Math.floor(Math.random() * gridH)]),
 ]
-
-export const startNode = start(grid)
-export const endNode = end(grid)
 
 startNode.color = nodeColors.start
 endNode.color = nodeColors.end
+startNode.path = true
+endNode.path = true
 
-astar(grid)([startNode, endNode]).forEach(node => {
+export const calcPath = () => astar(grid)([startNode, endNode]).forEach(node => {
   if (node.color !== nodeColors.end)
     node.color = 0x0000ff
 })
