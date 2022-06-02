@@ -1,6 +1,6 @@
 export type NonEmptyArray<T> = [T, ...T[]];
 
-export type Grid = NonEmptyArray<NonEmptyArray<Node>>
+export type Grid = NonEmptyArray<Node>
 
 export type NodeType = 'start' | 'end' | 'path' | 'wall'
 
@@ -12,6 +12,8 @@ export type Node = {
   y: number
   px: number
   py: number
+  coords: [number, number]
+  seen: boolean
   path: boolean
   color: number
   parent: Node | null

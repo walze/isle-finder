@@ -1,49 +1,57 @@
 
+import {gridGet, gridH, gridW} from './grid'
 import {Node, Grid} from './types'
 
-const heuristic = (a: number, b: number) =>
+export const pythagoras = (a: number, b: number) =>
   Math.sqrt((a ** 2) + (b ** 2))
 
-export const getNeighbors = (g: Grid) => (n: Node) => {
-  const {px, py} = n
-  const neighbors: Node[] = []
+export const manhathan = (a: number, b: number) =>
+  Math.abs(a) + Math.abs(b)
 
-  if (px > 0) neighbors.push(g[py]![px - 1]!)
-  if (px < g[py]!.length - 1) neighbors.push(g[py]![px + 1]!)
-  if (py > 0) neighbors.push(g[py - 1]![px]!)
-  if (py < g[py]!.length - 1) neighbors.push(g[py + 1]![px]!)
+export const getNeighbors = (grid: Grid) => (n: Node) => {
+  const [px, py] = n.coords
+  const neighbors: Node[] = []
+  const getNode = gridGet(grid)
+
+  // Get neighboors including diagonal
+  if (px > 0)
+    neighbors.push(getNode([px - 1, py]))
+  if (px < gridW - 1)
+    neighbors.push(getNode([px + 1, py]))
+  if (py > 0)
+    neighbors.push(getNode([px, py - 1]))
+  if (py < gridH - 1)
+    neighbors.push(getNode([px, py + 1]))
 
   return neighbors
 }
 
-// Astar using Sets
-export const astar = (grid: Grid) => ([start, end]: [Node, Node]): Node[] => {
-  const openSet = new Set<Node>([start])
-  const closedSet = new Set<Node>()
+export const astar
+  = (grid: Grid) =>
+    (
+      [start, end]: [Node, Node],
+      queue = new Set<Node>([start]),
+    ): Node[] => {
+      const current = [...queue].reduce((a, b) => a.f < b.f ? a : b)
+      if (current === end) return reconstructPath(current)
 
-  while (openSet.size) {
-    const current = [...openSet].reduce((a, b) => a.f < b.f ? a : b)
-    if (current === end) return reconstructPath(current)
+      queue.delete(current)
+      current.seen = true
 
-    openSet.delete(current)
-    closedSet.add(current)
+      getNeighbors(grid)(current)
+        .filter(({seen, path}) => !seen && path)
+        .forEach(neighbor => {
+          const newScore = calcScores(current.g, neighbor, end)
 
-    getNeighbors(grid)(grid[current.py]![current.px]!)
-      .forEach(neighbor => {
-        if (closedSet.has(neighbor) || !neighbor.path) return
+          if (!queue.has(neighbor) || newScore.f < neighbor.f) {
+            updateNode(neighbor)({...newScore, current})
 
-        const scores = newScores(current.g, neighbor, end)
+            queue.add(neighbor)
+          }
+        })
 
-        if (!openSet.has(neighbor) || scores.f < neighbor.f) {
-          updateNode(neighbor)({...scores, current})
-
-          openSet.add(neighbor)
-        }
-      })
-  }
-
-  return []
-}
+      return astar(grid)([start, end], queue)
+    }
 
 export const updateNode
 = (node: Node) =>
@@ -65,9 +73,9 @@ export const updateNode
     return node
   }
 
-function newScores(oldG: number, neighbor: Node, end: Node) {
+function calcScores(oldG: number, n1: Node, n2: Node) {
   const g = oldG + 1
-  const h = heuristic(neighbor.x - end.x, neighbor.y - end.y)
+  const h = pythagoras(n1.x - n2.x, n1.y - n2.y)
   const f = g + h
 
   return {f, g, h}

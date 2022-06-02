@@ -1,63 +1,63 @@
-import {Graphics, Ticker} from 'pixi.js'
-import {concatMap, delay, from, fromEvent, identity, map, mergeMap, Observable, of, tap} from 'rxjs'
-import {screenW, screenH, grid, cellW, cellH, gridGet, nodeColors, calcPath, startNode, endNode, bestPath} from './grid'
+import {Application, Graphics} from 'pixi.js'
+import {fromEvent, map, Observable, pipe, switchMap, tap} from 'rxjs'
+import {screenW, screenH, grid, cellW, cellH, gridGet, nodeColors, calcPath, startNode, endNode} from './grid'
 import {pair} from './helpers'
 import {Node} from './types'
 
-const ticker$ = new Observable<number>(subscriber => {
-  const ticker = Ticker.shared
-  ticker.maxFPS = 10
+const ticker$ = (app: Application) => new Observable<number>(subscriber => {
+  const {ticker} = app
+
+  ticker.deltaMS = 1000 / 60
+  ticker.maxFPS = 60
+  ticker.minFPS = 24
 
   ticker.add(delta => subscriber.next(delta))
 })
 
-export const startPixi = (view: HTMLCanvasElement) => import('pixi.js')
-  .then(({Application, Graphics}) => {
-    const gfx = new Graphics()
-    const app = new Application({
-      view,
-      width: screenW,
-      height: screenH,
-      backgroundColor: 0xeeeeee,
-    })
+const nodeFromClick = pipe(
+  map(({offsetX, offsetY}: MouseEvent) => pair(
+    Math.floor(offsetX / cellW),
+    Math.floor(offsetY / cellH),
+  )),
+  map(gridGet(grid)),
+)
 
-    app.stage.addChild(gfx)
+const calcPath$ = calcPath(pair(startNode, endNode))
 
-    fromEvent<MouseEvent>(view, 'click')
-      .pipe(
-        map(({offsetX, offsetY}) => [
-          Math.floor(offsetX / cellW),
-          Math.floor(offsetY / cellH),
-        ] as [number, number]),
-        map(gridGet(grid)),
-      ).subscribe(n => {
-        n.color = nodeColors.wall
-        n.path = false
-
-        calcPath(pair(startNode, endNode))
-          .pipe(
-            mergeMap(identity),
-            concatMap(n => of(n).pipe(delay(1000 / 50))),
-            tap(node => {
-              if (node.color !== nodeColors.end && node.color !== nodeColors.start)
-                node.color = 0x0000ff
-            }),
-          )
-          .subscribe()
+export const startPixi = (view: HTMLCanvasElement) =>
+  import('pixi.js')
+    .then(({Application, Graphics}) => {
+      const gfx = new Graphics()
+      const click$ = fromEvent<MouseEvent>(view, 'click')
+      const app = new Application({
+        view,
+        width: screenW,
+        height: screenH,
+        backgroundColor: 0xeeeeee,
       })
 
-    ticker$.subscribe(d => {
-      console.log(d, Ticker.shared.FPS)
+      app.stage.addChild(gfx)
 
-      from(grid)
+      click$
         .pipe(
-          mergeMap(identity),
+          nodeFromClick,
+          tap(n => {
+            n.color = nodeColors.wall
+            n.path = false
+          }),
         )
-        .subscribe(
-          drawNode(gfx),
+        .subscribe()
+
+      click$
+        .pipe(
+          switchMap(() => calcPath$),
         )
+        .subscribe(console.log)
+
+      ticker$(app).subscribe(_ => {
+        grid.map(drawNode(gfx))
+      })
     })
-  })
 
 const drawNode = (gfx: Graphics) => ({x, y, color}: Node) => {
   gfx.beginFill(color)

@@ -1,5 +1,5 @@
 import assert from 'assert'
-import {BehaviorSubject, map, of, tap} from 'rxjs'
+import {BehaviorSubject, identity, map, mergeMap, of, tap} from 'rxjs'
 import {astar} from './astar'
 import {pair} from './helpers'
 import {Grid, Node} from './types'
@@ -17,50 +17,46 @@ export const screenH = 800
 export const [gridW, gridH] = [50, 50]
 export const [cellW, cellH] = [screenW / gridW, screenH / gridH]
 
-export const makeNode = (x: number, y: number): Node => {
+export const makeNode = (coords: [number, number]): Node => {
   const r = Math.random() > 1 / 4
+  const [x, y] = coords
 
   return {
     px: x,
     py: y,
     x: x * cellW,
     y: y * cellH,
+    coords,
     f: Number.MAX_SAFE_INTEGER,
     g: Number.MAX_SAFE_INTEGER,
     h: Number.MAX_SAFE_INTEGER,
     parent: null,
     path: r,
+    seen: false,
     color: r ? nodeColors.path : nodeColors.wall,
   }
 }
 
-export const grid
-  = Array.from({length: gridH}, (_, y) =>
-    Array.from({length: gridW}, (_, x) => makeNode(
-      x,
-      y,
-    )),
-  ) as Grid
+export const grid = [] as unknown as Grid
+
+for (let x = 0; x < gridW; x++)
+  for (let y = 0; y < gridH; y++)
+    grid[(x * gridW) + y] = makeNode([x, y])
 
 export const gridSet
   = ([x, y]: [number, number], value: Node) =>
-    (grid: Node[][]): void => {
-      const gx = grid[x]
-      assert(gx, 'cannot get grid x ' + x)
-      assert(gx[y], 'cannot get grid y ' + y)
+    (grid: Grid): void => {
+      assert(grid[(x * gridW) + y], `cannot get node at ${x}, ${y}`)
 
-      gx[y] = value
+      grid[(x * gridW) + y] = value
     }
 
 export const gridGet
   = (grid: Grid) =>
-    ([y, x]: [number, number]): Node => {
-      const gx = grid[x]
-      assert(gx, 'cannot get grid x ' + x)
-      const node = gx[y]
-      assert(node, 'cannot get grid y ' + y)
+    ([x, y]: [number, number]): Node => {
+      assert(grid[(x * gridW) + y], `cannot get node at ${x}, ${y}`)
 
-      return node
+      return grid[(x * gridW) + y] as Node
     }
 
 // Random start and end points
@@ -76,14 +72,22 @@ endNode.path = true
 
 export const bestPath = new BehaviorSubject<Node[]>([])
 
-export const calcPath = ([n1, n2]: [Node, Node]) => {
-  bestPath.getValue().forEach(node => {
-    node.color = node.path ? nodeColors.path : nodeColors.wall
-  })
+export const calcPath = ([n1, n2]: [Node, Node]) => of(pair(n1, n2))
+  .pipe(
+    tap(() => {
+      grid.forEach(n => {
+        n.seen = false
+      })
 
-  return of(pair(n1, n2))
-    .pipe(
-      map(astar(grid)),
-      tap(nodes => bestPath.next(nodes)),
-    )
-}
+      bestPath.getValue().forEach(node => {
+        node.color = node.path ? nodeColors.path : nodeColors.wall
+      })
+    }),
+    map(coords => astar(grid)(coords)),
+    tap(nodes => bestPath.next(nodes)),
+    mergeMap(identity),
+    tap(node => {
+      if (node.color !== nodeColors.end && node.color !== nodeColors.start)
+        node.color = 0x0000ff
+    }),
+  )
