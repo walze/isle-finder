@@ -1,7 +1,15 @@
-import {Graphics} from 'pixi.js'
-import {from, fromEvent, identity, map, mergeMap} from 'rxjs'
-import {screenW, screenH, grid, cellW, cellH, gridGet, nodeColors, calcPath} from './grid'
+import {Graphics, Ticker} from 'pixi.js'
+import {concatMap, delay, from, fromEvent, identity, map, mergeMap, Observable, of, tap} from 'rxjs'
+import {screenW, screenH, grid, cellW, cellH, gridGet, nodeColors, calcPath, startNode, endNode, bestPath} from './grid'
+import {pair} from './helpers'
 import {Node} from './types'
+
+const ticker$ = new Observable<number>(subscriber => {
+  const ticker = Ticker.shared
+  ticker.maxFPS = 10
+
+  ticker.add(delta => subscriber.next(delta))
+})
 
 export const startPixi = (view: HTMLCanvasElement) => import('pixi.js')
   .then(({Application, Graphics}) => {
@@ -26,22 +34,32 @@ export const startPixi = (view: HTMLCanvasElement) => import('pixi.js')
         n.color = nodeColors.wall
         n.path = false
 
-        calcPath()
+        calcPath(pair(startNode, endNode))
+          .pipe(
+            mergeMap(identity),
+            concatMap(n => of(n).pipe(delay(1000 / 50))),
+            tap(node => {
+              if (node.color !== nodeColors.end && node.color !== nodeColors.start)
+                node.color = 0x0000ff
+            }),
+          )
+          .subscribe()
       })
 
-    app.ticker.speed = 5
-    app.ticker.add(_ => {
+    ticker$.subscribe(d => {
+      console.log(d, Ticker.shared.FPS)
+
       from(grid)
         .pipe(
           mergeMap(identity),
         )
-        .subscribe(node => {
-          drawNode(gfx, node)
-        })
+        .subscribe(
+          drawNode(gfx),
+        )
     })
   })
 
-const drawNode = (gfx: Graphics, {x, y, color}: Node) => {
+const drawNode = (gfx: Graphics) => ({x, y, color}: Node) => {
   gfx.beginFill(color)
   const padding = 0.5
   gfx.drawRect(x + padding, y + padding, cellW - (padding * 2), cellH - (padding * 2))

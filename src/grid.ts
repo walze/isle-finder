@@ -1,5 +1,7 @@
 import assert from 'assert'
+import {BehaviorSubject, map, of, tap} from 'rxjs'
 import {astar} from './astar'
+import {pair} from './helpers'
 import {Grid, Node} from './types'
 
 export const nodeColors = {
@@ -72,7 +74,16 @@ endNode.color = nodeColors.end
 startNode.path = true
 endNode.path = true
 
-export const calcPath = () => astar(grid)([startNode, endNode]).forEach(node => {
-  if (node.color !== nodeColors.end)
-    node.color = 0x0000ff
-})
+export const bestPath = new BehaviorSubject<Node[]>([])
+
+export const calcPath = ([n1, n2]: [Node, Node]) => {
+  bestPath.getValue().forEach(node => {
+    node.color = node.path ? nodeColors.path : nodeColors.wall
+  })
+
+  return of(pair(n1, n2))
+    .pipe(
+      map(astar(grid)),
+      tap(nodes => bestPath.next(nodes)),
+    )
+}
