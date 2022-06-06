@@ -1,4 +1,5 @@
 
+import {catchError, filter, from, map, mergeMap, Observable, of, tap, toArray} from 'rxjs'
 import {gridGet, gridH, gridW} from './grid'
 import {Node, Grid} from './types'
 
@@ -26,31 +27,51 @@ export const getNeighbors = (grid: Grid) => (n: Node) => {
   return neighbors
 }
 
+export const astarr
+  = (grid: Grid) =>
+    ([start, end]: [Node, Node], queue: Grid = [start]): Observable<Node[]> =>
+      of(queue.sort((a, b) => a.f - b.f))
+        .pipe(
+          tap(([current]) => {
+            current.seen = true
+            if (current === end)
+              throw current
+          }),
+          mergeMap(([current, ...q]) =>
+            from(getNeighbors(grid)(current))
+              .pipe(
+                filter(({seen, isPath}: Node) => !seen && isPath),
+                filter(n => {
+                  const newScore = calcScores(current.g, n, end)
+                  updateNode(n)({...newScore, parent: current})
+
+                  return !q.includes(n) || newScore.f < n.f
+                }),
+                toArray(),
+                map(nodes => [...nodes, ...q]),
+              ),
+          ),
+          mergeMap(q => astarr(grid)([start, end], q as Grid)),
+          catchError(c => of(reconstructPath(c))),
+        )
+
 export const astar
   = (grid: Grid) =>
-    (
-      [start, end]: [Node, Node],
-      queue = new Set<Node>([start]),
-    ): Node[] => {
-      const current = [...queue].reduce((a, b) => a.f < b.f ? a : b)
+    ([start, end]: [Node, Node], queue: Grid = [start]): Node[] => {
+      const [current, ...newQueue] = queue.sort((a, b) => a.f - b.f)
+      current.seen = true
       if (current === end) return reconstructPath(current)
 
-      queue.delete(current)
-      current.seen = true
+      const candidates = getNeighbors(grid)(current)
+        .filter(({seen, isPath}) => !seen && isPath)
+        .filter(n => {
+          const newScore = calcScores(current.g, n, end)
+          updateNode(n)({...newScore, parent: current})
 
-      getNeighbors(grid)(current)
-        .filter(({seen, path}) => !seen && path)
-        .forEach(neighbor => {
-          const newScore = calcScores(current.g, neighbor, end)
-
-          if (!queue.has(neighbor) || newScore.f < neighbor.f) {
-            updateNode(neighbor)({...newScore, current})
-
-            queue.add(neighbor)
-          }
+          return !newQueue.includes(n) || newScore.f < n.f
         })
 
-      return astar(grid)([start, end], queue)
+      return astar(grid)([start, end], [...newQueue, ...candidates] as Grid)
     }
 
 export const updateNode
@@ -60,15 +81,15 @@ export const updateNode
     f: number,
     g: number,
     h: number,
-    current: Node
+    parent: Node
   },
   ) => {
-    const {current, f, g, h} = update
+    const {parent, f, g, h} = update
 
     node.f = f
     node.g = g
     node.h = h
-    node.parent = current
+    node.parent = parent
 
     return node
   }

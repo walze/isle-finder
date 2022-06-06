@@ -1,6 +1,6 @@
 import assert from 'assert'
-import {BehaviorSubject, identity, map, mergeMap, of, tap} from 'rxjs'
-import {astar} from './astar'
+import {BehaviorSubject, identity, mergeMap, of, tap} from 'rxjs'
+import {astarr} from './astar'
 import {pair} from './helpers'
 import {Grid, Node} from './types'
 
@@ -14,7 +14,7 @@ export const nodeColors = {
 export const screenW = 800
 export const screenH = 800
 
-export const [gridW, gridH] = [50, 50]
+export const [gridW, gridH] = [75, 75]
 export const [cellW, cellH] = [screenW / gridW, screenH / gridH]
 
 export const makeNode = (coords: [number, number]): Node => {
@@ -27,11 +27,11 @@ export const makeNode = (coords: [number, number]): Node => {
     x: x * cellW,
     y: y * cellH,
     coords,
-    f: Number.MAX_SAFE_INTEGER,
-    g: Number.MAX_SAFE_INTEGER,
-    h: Number.MAX_SAFE_INTEGER,
+    f: 0,
+    g: 0,
+    h: 0,
     parent: null,
-    path: r,
+    isPath: r,
     seen: false,
     color: r ? nodeColors.path : nodeColors.wall,
   }
@@ -67,8 +67,8 @@ export const [startNode, endNode] = [
 
 startNode.color = nodeColors.start
 endNode.color = nodeColors.end
-startNode.path = true
-endNode.path = true
+startNode.isPath = true
+endNode.isPath = true
 
 export const bestPath = new BehaviorSubject<Node[]>([])
 
@@ -80,10 +80,10 @@ export const calcPath = ([n1, n2]: [Node, Node]) => of(pair(n1, n2))
       })
 
       bestPath.getValue().forEach(node => {
-        node.color = node.path ? nodeColors.path : nodeColors.wall
+        node.color = node.isPath ? nodeColors.path : nodeColors.wall
       })
     }),
-    map(coords => astar(grid)(coords)),
+    mergeMap(coords => astarr(grid)(coords)),
     tap(nodes => bestPath.next(nodes)),
     mergeMap(identity),
     tap(node => {

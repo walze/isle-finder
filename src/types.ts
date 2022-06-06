@@ -14,7 +14,7 @@ export type Node = {
   py: number
   coords: [number, number]
   seen: boolean
-  path: boolean
+  isPath: boolean
   color: number
   parent: Node | null
 }

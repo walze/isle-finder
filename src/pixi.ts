@@ -1,5 +1,5 @@
 import {Application, Graphics} from 'pixi.js'
-import {fromEvent, map, Observable, pipe, switchMap, tap} from 'rxjs'
+import {fromEvent, map, Observable, pipe, switchMap} from 'rxjs'
 import {screenW, screenH, grid, cellW, cellH, gridGet, nodeColors, calcPath, startNode, endNode} from './grid'
 import {pair} from './helpers'
 import {Node} from './types'
@@ -39,20 +39,17 @@ export const startPixi = (view: HTMLCanvasElement) =>
       app.stage.addChild(gfx)
 
       click$
-        .pipe(
-          nodeFromClick,
-          tap(n => {
-            n.color = nodeColors.wall
-            n.path = false
-          }),
-        )
-        .subscribe()
+        .pipe(nodeFromClick)
+        .subscribe(n => {
+          n.color = nodeColors.wall
+          n.isPath = false
+        })
 
       click$
         .pipe(
           switchMap(() => calcPath$),
         )
-        .subscribe(console.log)
+        .subscribe()
 
       ticker$(app).subscribe(_ => {
         grid.map(drawNode(gfx))
