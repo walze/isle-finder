@@ -9,6 +9,7 @@ module.exports = {
     'plugin:react/recommended',
     'plugin:@typescript-eslint/recommended',
     'xo',
+    'airbnb-base',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -20,6 +21,7 @@ module.exports = {
   },
   plugins: ['react', '@typescript-eslint'],
   rules: {
+    'implicit-arrow-linebreak': ['error', 'below'],
     curly: ['error', 'multi'],
     indent: ['error', 2],
     'linebreak-style': ['error', 'unix'],
