@@ -11,44 +11,34 @@ export const updateNode = (node: Node) => (update: Partial<Node>) => {
   return node;
 };
 
-export const calcScores = (oldG: number, n1: Node, n2: Node) => {
-  const g = oldG + pythagoras(n1.x - n2.x, n1.y - n2.y);
-  // if (g >= n1.g) return { g };
-  const h = manhattan(n1.x - n2.x, n1.y - n2.y);
+export const calcScores = (og: number, n1: Node, n2: Node) => {
+  const g = og + pythagoras(n1.px - n2.px, n1.py - n2.py);
+  const h = pythagoras(n1.px - n2.px, n1.py - n2.py);
   const f = g + h;
 
   return { f, g, h };
 };
 
-const reconstructPath = (current: Node): Node[] => {
-  const path: Node[] = [];
-  let node = current;
-
-  while (node.parent) {
-    path.push(node);
-    node = node.parent;
-  }
-
-  return path;
-};
+const reconstructPath = (node: Node, path = [] as Node[]): Node[] =>
+  !node.parent ? path : reconstructPath(node.parent, [...path, node]);
 
 export const astar =
   (grid: Grid) =>
-  ([start, end]: [Node, Node], _openSet: Grid = [start]): Node[] => {
-    const [current, ...openSet] = _openSet.sort((a, b) => a.f - b.f);
-    current.seen = true;
-    if (current === end) return reconstructPath(current);
+  ([start, goal]: [Node, Node], _openSet: Grid = [start]): Node[] => {
+    const [node, ...openSet] = _openSet.sort((a, b) => a.f - b.f);
+    node.seen = true;
+    if (node === goal) return reconstructPath(node);
 
-    const candidates = getNeighbors(grid)(current)
+    const neighbors = getNeighbors(grid)(node)
       .filter(({ seen, isPath }) => !seen && isPath)
       .filter((n) => {
-        const scores = calcScores(current.g, n, end);
+        const scores = calcScores(node.g, n, goal);
         if (scores.g >= n.g) return false;
 
-        updateNode(n)({ ...scores, parent: current });
+        updateNode(n)({ ...scores, parent: node });
 
         return !openSet.includes(n);
       });
 
-    return astar(grid)([start, end], [...openSet, ...candidates] as Grid);
+    return astar(grid)([start, goal], [...openSet, ...neighbors] as Grid);
   };

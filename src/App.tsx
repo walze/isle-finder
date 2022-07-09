@@ -9,9 +9,5 @@ export const App: FC = () => {
       startPixi(ref.current)
   }, [ref.current])
 
-  return (
-    <>
-      <canvas id='canvas' ref={ref} />
-    </>
-  )
+  return <canvas id='canvas' ref={ref} />
 }

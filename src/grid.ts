@@ -28,8 +28,9 @@ console.table({
 });
 
 export const makeNode = (coords: [number, number]): Node => {
-  const r = Math.random() > 1 / 4;
   const [x, y] = coords;
+
+  const isPath = true;
 
   return {
     px: x,
@@ -41,9 +42,9 @@ export const makeNode = (coords: [number, number]): Node => {
     g: Number.MAX_SAFE_INTEGER,
     h: Number.MAX_SAFE_INTEGER,
     parent: null,
-    isPath: r,
+    isPath,
     seen: false,
-    color: r ? nodeColors.path : nodeColors.wall,
+    color: isPath ? nodeColors.path : nodeColors.wall,
     text: null,
   };
 };
@@ -51,9 +52,6 @@ export const makeNode = (coords: [number, number]): Node => {
 export const grid = [] as unknown as Grid;
 for (let x = 0; x < gridW; x++)
   for (let y = 0; y < gridH; y++) grid[x * gridW + y] = makeNode([x, y]);
-
-document.onclick = () =>
-  console.log(grid.map(({ f, g, h, coords }) => ({ g })));
 
 export const gridSet =
   ([x, y]: [number, number], value: Node) =>
@@ -125,6 +123,13 @@ export const getNeighbors = (grid: Grid) => (n: Node) => {
   if (py < gridH - 1) neighbors.push(getNode([px, py + 1]));
   if (px > 0) neighbors.push(getNode([px - 1, py]));
   if (py > 0) neighbors.push(getNode([px, py - 1]));
+
+  // diagonal
+  if (px > 0 && py > 0) neighbors.push(getNode([px - 1, py - 1]));
+  if (px < gridW - 1 && py > 0) neighbors.push(getNode([px + 1, py - 1]));
+  if (px > 0 && py < gridH - 1) neighbors.push(getNode([px - 1, py + 1]));
+  if (px < gridW - 1 && py < gridH - 1)
+    neighbors.push(getNode([px + 1, py + 1]));
 
   return neighbors;
 };

@@ -7,7 +7,6 @@ import {
   cellW,
   cellH,
   gridGet,
-  getNeighbors,
   calcPath,
   startNode,
   endNode,
@@ -15,6 +14,8 @@ import {
 } from "./grid";
 import { pair } from "./helpers";
 import { Node } from "./types";
+
+import "./isles";
 
 const ticker$ = (app: Application) =>
   new Observable<number>((subscriber) => {
@@ -36,48 +37,47 @@ const nodeFromClick = pipe(
 
 const calcPath$ = calcPath(pair(startNode, endNode));
 
-export const startPixi = (view: HTMLCanvasElement) =>
-  import("pixi.js").then(({ Application, Graphics }) => {
-    const gfx = new Graphics();
-    const click$ = fromEvent<MouseEvent>(view, "click");
-    const app = new Application({
-      view,
-      width: screenW,
-      height: screenH,
-      backgroundColor: 0xeeeeee,
-    });
-
-    app.stage.addChild(gfx);
-
-    click$
-      .pipe(
-        nodeFromClick,
-        tap(console.warn),
-        tap(() =>
-          grid.forEach((n) => {
-            n.seen = false;
-            n.f = Number.MAX_SAFE_INTEGER;
-            n.g = Number.MAX_SAFE_INTEGER;
-            n.h = Number.MAX_SAFE_INTEGER;
-            n.parent = null;
-
-            startNode.g = 0;
-          })
-        ),
-        tap((n) => {
-          n.color = nodeColors.wall;
-          n.isPath = false;
-        }),
-        switchMap(() => calcPath$)
-      )
-      .subscribe();
-
-    ticker$(app).subscribe((_) => {
-      grid.map(drawNode(gfx));
-    });
-
-    calcPath$.subscribe();
+export const startPixi = async (view: HTMLCanvasElement) => {
+  const gfx = new Graphics();
+  const click$ = fromEvent<MouseEvent>(view, "click");
+  const app = new Application({
+    view,
+    width: screenW,
+    height: screenH,
+    backgroundColor: 0xeeeeee,
   });
+
+  app.stage.addChild(gfx);
+
+  click$
+    .pipe(
+      nodeFromClick,
+      tap(console.warn),
+      tap(() =>
+        grid.forEach((n) => {
+          n.seen = false;
+          n.f = Number.MAX_SAFE_INTEGER;
+          n.g = Number.MAX_SAFE_INTEGER;
+          n.h = Number.MAX_SAFE_INTEGER;
+          n.parent = null;
+
+          startNode.g = 0;
+        })
+      ),
+      tap((n) => {
+        n.color = nodeColors.wall;
+        n.isPath = false;
+      }),
+      switchMap(() => calcPath$)
+    )
+    .subscribe();
+
+  ticker$(app).subscribe((_) => {
+    grid.map(drawNode(gfx));
+  });
+
+  calcPath$.subscribe();
+};
 
 const drawNode = (gfx: Graphics) => (node: Node) => {
   const { x, y, color, f, g, h, text } = node;
@@ -86,26 +86,25 @@ const drawNode = (gfx: Graphics) => (node: Node) => {
 
   const t =
     text ||
-    new Text(
-      [f, g, h]
-        .map((n) => (n === Number.MAX_SAFE_INTEGER ? "" : Math.floor(n)))
-        .join("\n"),
-      {
-        fontSize: cellH / 3 - 1,
-        fontWeight: "100",
-        fill: 0xffffff,
-        stroke: 0x000000,
-        strokeThickness: 1,
-        lineHeight: cellH / 3 - 1,
-      }
-    );
+    new Text("", {
+      fontSize: cellH / 3 - 1,
+      fontWeight: "100",
+      fill: 0xffffff,
+      stroke: 0x000000,
+      strokeThickness: 1,
+      lineHeight: cellH / 3 - 1,
+    });
 
-  t.x = x;
-  t.y = y;
+  t.text = [h, g, f]
+    .map((n) => (n === Number.MAX_SAFE_INTEGER ? "" : Math.floor(n)))
+    .join("\n");
 
   if (!text) {
-    gfx.addChild(t);
+    t.x = x;
+    t.y = y;
+
     node.text = t;
+    gfx.addChild(t);
   }
 
   gfx.drawRect(
