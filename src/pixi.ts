@@ -55,7 +55,6 @@ export const startPixi = async (view: HTMLCanvasElement) => {
       tap(console.warn),
       tap(() =>
         grid.forEach((n) => {
-          n.seen = false;
           n.f = Number.MAX_SAFE_INTEGER;
           n.g = Number.MAX_SAFE_INTEGER;
           n.h = Number.MAX_SAFE_INTEGER;

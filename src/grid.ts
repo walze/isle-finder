@@ -1,6 +1,6 @@
 import assert from "assert";
 import { BehaviorSubject, identity, map, mergeMap, of, tap } from "rxjs";
-import { astar, calcScores, updateNode } from "./astar";
+import { astar, calcScores } from "./astar";
 import { pair } from "./helpers";
 import { Grid, Node } from "./types";
 
@@ -30,7 +30,7 @@ console.table({
 export const makeNode = (coords: [number, number]): Node => {
   const [x, y] = coords;
 
-  const isPath = true;
+  const isPath = Math.random() < 0.5;
 
   return {
     px: x,
@@ -43,7 +43,6 @@ export const makeNode = (coords: [number, number]): Node => {
     h: Number.MAX_SAFE_INTEGER,
     parent: null,
     isPath,
-    seen: false,
     color: isPath ? nodeColors.path : nodeColors.wall,
     text: null,
   };
@@ -84,7 +83,7 @@ export const [startNode, endNode] = [
 startNode.color = nodeColors.start;
 startNode.g = 0;
 startNode.isPath = true;
-updateNode(startNode)({
+Object.assign(startNode, {
   ...calcScores(startNode.g, startNode, endNode),
   parent: null,
 });
@@ -97,10 +96,6 @@ export const bestPath = new BehaviorSubject<Node[]>([]);
 export const calcPath = ([n1, n2]: [Node, Node]) =>
   of(pair(n1, n2)).pipe(
     tap(() => {
-      grid.forEach((n) => {
-        n.seen = false;
-      });
-
       bestPath.getValue().forEach((node) => {
         node.color = node.isPath ? nodeColors.path : nodeColors.wall;
       });

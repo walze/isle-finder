@@ -9,7 +9,6 @@ export type Node = {
   px: number;
   py: number;
   coords: [number, number];
-  seen: boolean;
   isPath: boolean;
   color: number;
   parent: Node | null;
