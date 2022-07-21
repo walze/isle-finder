@@ -22,7 +22,7 @@ type Astar = (
 
 export const astar: Astar =
   (grid) =>
-  ([start, goal], q = [start], s = []): Node[] => {
+  ([start, goal], q = [start], s = []) => {
     const [node, ...queue] = q.sort((a, b) => a.f - b.f);
     const seen = [...s, node];
 

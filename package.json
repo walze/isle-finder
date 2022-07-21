@@ -3,9 +3,8 @@
   "version": "1.0.0",
   "description": "This is a POC to find the optimal path through markets isles.",
   "source": "src/index.html",
-  "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
-    "dev": "parcel --log-level verbose --lazy",
+    "dev": "parcel --log-level verbose --open",
     "build": "parcel build --log-level verbose",
     "test": "xo"
   },
@@ -25,7 +24,6 @@
     "@types/assert": "^1.5.6",
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
-    "assert": "^2.0.0",
     "eslint": "^8.20.0",
     "parcel": "^2.6.2",
     "pixi.js": "^6.4.2",
@@ -33,12 +31,13 @@
     "react-dom": "^18.2.0",
     "rxjs": "^7.5.6",
     "typescript": "^4.7.4",
-    "xo": "^0.50.0",
+    "xo": "^0.51.0",
     "yarn": "^1.22.19"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.30.6",
-    "@typescript-eslint/parser": "^5.30.6",
+    "@typescript-eslint/eslint-plugin": "^5.30.7",
+    "@typescript-eslint/parser": "^5.30.7",
+    "assert": "^2.0.0",
     "eslint-plugin-react": "^7.30.1",
     "process": "^0.11.10",
     "punycode": "^2.1.1",

@@ -45,6 +45,9 @@ export const startPixi = async (view: HTMLCanvasElement) => {
     width: screenW,
     height: screenH,
     backgroundColor: 0xeeeeee,
+    antialias: false,
+    powerPreference: "high-performance",
+    useContextAlpha: false,
   });
 
   app.stage.addChild(gfx);
@@ -79,24 +82,26 @@ export const startPixi = async (view: HTMLCanvasElement) => {
 };
 
 const drawNode = (gfx: Graphics) => (node: Node) => {
-  const { x, y, color, f, g, h, text } = node;
+  const { x, y, color, f, g, h, text, px, py } = node;
   gfx.beginFill(color);
   const padding = 0.5;
 
   const t =
     text ||
     new Text("", {
-      fontSize: cellH / 3 - 1,
+      fontSize: cellH / 4 - 1,
       fontWeight: "100",
       fill: 0xffffff,
       stroke: 0x000000,
       strokeThickness: 1,
-      lineHeight: cellH / 3 - 1,
+      lineHeight: cellH / 4 - 1,
     });
 
-  t.text = [h, g, f]
-    .map((n) => (n === Number.MAX_SAFE_INTEGER ? "" : Math.floor(n)))
-    .join("\n");
+  t.text =
+    `(${px} , ${py})\n` +
+    [h, g, f]
+      .map((n) => (n === Number.MAX_SAFE_INTEGER ? "" : Math.floor(n)))
+      .join("\n");
 
   if (!text) {
     t.x = x;

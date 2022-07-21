@@ -30,7 +30,7 @@ console.table({
 export const makeNode = (coords: [number, number]): Node => {
   const [x, y] = coords;
 
-  const isPath = Math.random() < 0.5;
+  const isPath = true;
 
   return {
     px: x,
@@ -104,7 +104,7 @@ export const calcPath = ([n1, n2]: [Node, Node]) =>
     tap((nodes) => bestPath.next(nodes)),
     mergeMap(identity),
     tap((node) => {
-      if (node.color !== nodeColors.end || node.color !== nodeColors.start)
+      if (node.color !== nodeColors.end && node.color !== nodeColors.start)
         node.color = 0x0000ff;
     })
   );
