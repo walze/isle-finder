@@ -1,6 +1,6 @@
 import { grid, gridH, gridGet, gridW, nodeColors } from "./grid";
 import { range } from "./helpers";
-import { Node } from "./types";
+import type { Node } from "./types";
 
 const nIslesX = Math.min(4, Math.floor(gridW / 3));
 const nIslesY = 2;

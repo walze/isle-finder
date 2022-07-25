@@ -1,8 +1,7 @@
-import assert from "assert";
 import { BehaviorSubject, identity, map, mergeMap, of, tap } from "rxjs";
 import { astar, calcScores } from "./astar";
-import { pair } from "./helpers";
-import { Grid, Node } from "./types";
+import { assert, pair } from "./helpers";
+import type { Grid, Node } from "./types";
 
 export const nodeColors = {
   start: 0x00ff00,

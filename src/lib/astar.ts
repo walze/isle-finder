@@ -1,5 +1,5 @@
 import { getNeighbors } from "./grid";
-import { Node, Grid } from "./types";
+import type { Node, Grid } from "./types";
 
 export const pythagoras = (a: number, b: number) => Math.sqrt(a ** 2 + b ** 2);
 

@@ -13,7 +13,7 @@ import {
   nodeColors,
 } from "./grid";
 import { pair } from "./helpers";
-import { Node } from "./types";
+import type { Node } from "./types";
 
 import "./isles";
 
