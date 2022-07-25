@@ -114,17 +114,14 @@ export const getNeighbors = (grid: Grid) => (n: Node) => {
   const neighbors: Node[] = [];
   const getNode = gridGet(grid);
 
-  if (px < gridW - 1) neighbors.push(getNode([px + 1, py]));
-  if (py < gridH - 1) neighbors.push(getNode([px, py + 1]));
-  if (px > 0) neighbors.push(getNode([px - 1, py]));
-  if (py > 0) neighbors.push(getNode([px, py - 1]));
+  for (let i = -1; i <= 1; i++)
+    for (let j = -1; j <= 1; j++) {
+      const [x, y] = [px + i, py + j];
+      if (x < 0 || x >= gridW || y < 0 || y >= gridH) continue;
+      if (i === 0 && j === 0) continue;
 
-  // diagonal
-  if (px > 0 && py > 0) neighbors.push(getNode([px - 1, py - 1]));
-  if (px < gridW - 1 && py > 0) neighbors.push(getNode([px + 1, py - 1]));
-  if (px > 0 && py < gridH - 1) neighbors.push(getNode([px - 1, py + 1]));
-  if (px < gridW - 1 && py < gridH - 1)
-    neighbors.push(getNode([px + 1, py + 1]));
+      neighbors.push(getNode([x, y]));
+    }
 
   return neighbors;
 };

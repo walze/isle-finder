@@ -89,18 +89,21 @@ const drawNode = (gfx: Graphics) => (node: Node) => {
   const t =
     text ||
     new Text("", {
-      fontSize: cellH / 4 - 1,
       fontWeight: "100",
-      fill: 0xffffff,
+      fill: 0xeeeeee,
       stroke: 0x000000,
       strokeThickness: 1,
       lineHeight: cellH / 4 - 1,
+      align: "center",
     });
 
   t.text =
-    `(${px} , ${py})\n` +
+    ` (${px} , ${py})\n` +
     [h, g, f]
-      .map((n) => (n === Number.MAX_SAFE_INTEGER ? "" : Math.floor(n)))
+      .map(Math.round)
+      .map((n, i) =>
+        n === Number.MAX_SAFE_INTEGER ? "" : ` ${`hgf`[i]} : ${n}`
+      )
       .join("\n");
 
   if (!text) {

@@ -12,5 +12,5 @@ export const App: FC = () => {
       )
   }, [ref.current])
 
-  return <canvas id='canvas' ref={ref} onLoad={() => console.warn(123)} />
+  return <canvas ref={ref} />
 }

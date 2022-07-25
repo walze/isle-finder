@@ -6,8 +6,8 @@ export const pythagoras = (a: number, b: number) => Math.sqrt(a ** 2 + b ** 2);
 export const manhattan = (a: number, b: number) => Math.abs(a) + Math.abs(b);
 
 export const calcScores = (og: number, n1: Node, n2: Node) => {
-  const g = og + pythagoras(n1.px - n2.px, n1.py - n2.py);
-  const h = pythagoras(n1.px - n2.px, n1.py - n2.py);
+  const g = og + manhattan(n1.px - n2.px, n1.py - n2.py);
+  const h = manhattan(n1.px - n2.px, n1.py - n2.py);
   const f = g + h;
 
   return { f, g, h };

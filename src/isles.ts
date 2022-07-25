@@ -1,10 +1,11 @@
 import { grid, gridH, gridGet, gridW, nodeColors } from "./grid";
 import { range } from "./helpers";
+import { Node } from "./types";
 
-const nIslesX = Math.min(2, Math.floor(gridW / 3));
+const nIslesX = Math.min(4, Math.floor(gridW / 3));
 const nIslesY = 2;
 
-const padding = 0.2;
+const padding = 0.1;
 
 const width = 3;
 const height = gridH * (1 / nIslesY) - gridH * padding;
@@ -18,38 +19,39 @@ const marginPerIsleY = Math.floor(freeSpaceY / nIslesY);
 const fullIsleX = width + marginPerIsleX;
 const fullIsleY = height + marginPerIsleY;
 
-const r = range(0, nIslesX - 1)
-  .map((i) => {
-    const marginX =
-      i === 0 ? Math.ceil(marginPerIsleX / 2) : Math.floor(marginPerIsleX / 2);
+const get = gridGet(grid);
 
-    return i * fullIsleX + marginX;
-  })
-  .map((x, i) => {
-    const marginY =
-      i === 0 ? Math.ceil(marginPerIsleY / 2) : Math.floor(marginPerIsleY / 2);
+const wall: Partial<Node> = { isPath: false, color: nodeColors.wall };
 
-    const get = gridGet(grid);
+const xs = range(0, nIslesX - 1).map(
+  (i) =>
+    i * fullIsleX +
+    (i === 0 ? Math.ceil(marginPerIsleX / 2) : Math.floor(marginPerIsleX / 2))
+);
 
-    range(0, nIslesY - 1).map((y) => {
-      const py = y * fullIsleY + marginY;
-      console.log(x, py);
+const ys = range(0, nIslesY - 1).map(
+  (i) =>
+    i * fullIsleY +
+    (i === 0 ? Math.ceil(marginPerIsleY / 2) : Math.floor(marginPerIsleY / 2))
+);
 
-      range(py, py + height - 1).map((y) => {
-        const n = get([x + 1, y]);
+const r = xs.map((px) =>
+  ys.map((py) => {
+    range(py, py + height - 1).forEach((y) => {
+      const n = get([px + 1, y]);
 
-        Object.assign(n, { isPath: false, color: nodeColors.wall });
-      });
-
-      range(x, x + width - 1).forEach((px) => {
-        const n = get([px, py]);
-
-        Object.assign(n, { isPath: false, color: nodeColors.wall });
-      });
+      Object.assign(n, wall);
     });
 
-    return x;
-  });
+    range(px, px + width - 1).forEach((x) => {
+      const n = get([x, py]);
+      const n2 = get([x, py + height - 1]);
+
+      Object.assign(n, wall);
+      Object.assign(n2, wall);
+    });
+  })
+);
 
 console.table({
   height,
