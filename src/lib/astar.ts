@@ -5,9 +5,15 @@ export const pythagoras = (a: number, b: number) => Math.sqrt(a ** 2 + b ** 2);
 
 export const manhattan = (a: number, b: number) => Math.abs(a) + Math.abs(b);
 
-export const calcScores = (og: number, n1: Node, n2: Node) => {
-  const g = og + manhattan(n1.px - n2.px, n1.py - n2.py);
-  const h = manhattan(n1.px - n2.px, n1.py - n2.py);
+const isDiagonal = (a: Node, b: Node) => a.x !== b.x && a.y !== b.y;
+
+export const calcScores = (current: Node, neighbor: Node, goal: Node) => {
+  const d = isDiagonal(current, neighbor)
+    ? pythagoras(neighbor.px - goal.px, neighbor.py - goal.py) * 1.4
+    : pythagoras(neighbor.px - goal.px, neighbor.py - goal.py);
+
+  const g = current.g + d;
+  const h = manhattan(neighbor.px - goal.px, neighbor.py - goal.py);
   const f = g + h;
 
   return { f, g, h };
@@ -31,7 +37,7 @@ export const astar: Astar =
     const neighbors = getNeighbors(grid)(node)
       .filter((neighbor) => !seen.includes(neighbor) && neighbor.isPath)
       .filter((neighbor) => {
-        const scores = calcScores(node.g, neighbor, goal);
+        const scores = calcScores(node, neighbor, goal);
         if (scores.g >= neighbor.g) return false;
 
         Object.assign(neighbor, { ...scores, parent: node });

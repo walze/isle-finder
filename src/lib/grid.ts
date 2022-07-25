@@ -10,8 +10,8 @@ export const nodeColors = {
   wall: 0,
 };
 
-export const screenW = 800;
-export const screenH = 800;
+export const screenW = 1080;
+export const screenH = 1080;
 
 const size = 20;
 
@@ -83,7 +83,7 @@ startNode.color = nodeColors.start;
 startNode.g = 0;
 startNode.isPath = true;
 Object.assign(startNode, {
-  ...calcScores(startNode.g, startNode, endNode),
+  ...calcScores(startNode, startNode, endNode),
   parent: null,
 });
 

@@ -93,16 +93,17 @@ const drawNode = (gfx: Graphics) => (node: Node) => {
       fill: 0xeeeeee,
       stroke: 0x000000,
       strokeThickness: 1,
+      fontSize: cellH / 4 - 1,
       lineHeight: cellH / 4 - 1,
       align: "center",
     });
 
   t.text =
-    ` (${px} , ${py})\n` +
+    `(${px} , ${py})\n` +
     [h, g, f]
       .map(Math.round)
       .map((n, i) =>
-        n === Number.MAX_SAFE_INTEGER ? "" : ` ${`hgf`[i]} : ${n}`
+        +n === Number.MAX_SAFE_INTEGER ? "" : `${`hgf`[i]} : ${n}`
       )
       .join("\n");
 
