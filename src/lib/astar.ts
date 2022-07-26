@@ -17,7 +17,7 @@ export const calcScores = (
 ) => {
   const d = isDiagonal(current, neighbor)
     ? pythagoras(neighbor.px - goal.px, neighbor.py - goal.py) *
-      1.4
+      (4 / 3)
     : pythagoras(neighbor.px - goal.px, neighbor.py - goal.py);
 
   const g = current.g + d;
