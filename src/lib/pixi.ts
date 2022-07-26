@@ -1,12 +1,15 @@
 import { Application, Graphics, Text } from 'pixi.js';
 import {
+  animationFrames,
   fromEvent,
   map,
-  Observable,
+  mergeMap,
   pipe,
   switchMap,
   tap,
+  throttleTime,
 } from 'rxjs';
+
 import {
   screenW,
   screenH,
@@ -23,17 +26,6 @@ import { pair } from './helpers';
 import type { Node } from './types';
 
 import './listing';
-
-const ticker$ = (app: Application) =>
-  new Observable<number>((subscriber) => {
-    const { ticker } = app;
-
-    ticker.deltaMS = 1000 / 24;
-    ticker.maxFPS = 24;
-    ticker.minFPS = 24;
-
-    ticker.add((delta) => subscriber.next(delta));
-  });
 
 const nodeFromClick = pipe(
   map(({ offsetX, offsetY }: MouseEvent) =>
@@ -71,11 +63,12 @@ const drawNode = (gfx: Graphics) => (node: Node) => {
     )
     .join('\n')}`;
 
-  if (!text) {
-    t.x = x;
-    t.y = y;
+  t.x = x;
+  t.y = y;
 
-    node.text = t;
+  node.text = t;
+
+  if (!text) {
     gfx.addChild(t);
   }
 
@@ -89,8 +82,9 @@ const drawNode = (gfx: Graphics) => (node: Node) => {
   gfx.endFill();
 };
 
+const gph = new Graphics();
+
 export const startPixi = async (view: HTMLCanvasElement) => {
-  const gfx = new Graphics();
   const click$ = fromEvent<MouseEvent>(view, 'click');
   const app = new Application({
     view,
@@ -102,7 +96,7 @@ export const startPixi = async (view: HTMLCanvasElement) => {
     useContextAlpha: false,
   });
 
-  app.stage.addChild(gfx);
+  app.stage.addChild(gph);
 
   click$
     .pipe(
@@ -126,9 +120,12 @@ export const startPixi = async (view: HTMLCanvasElement) => {
     )
     .subscribe();
 
-  ticker$(app).subscribe(() => {
-    grid.map(drawNode(gfx));
-  });
+  animationFrames()
+    .pipe(
+      throttleTime(1000 / 3),
+      mergeMap(() => grid),
+    )
+    .subscribe(drawNode(gph));
 
   calcPath$.subscribe();
 };
