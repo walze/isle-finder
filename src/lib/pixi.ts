@@ -22,7 +22,7 @@ import {
 import { pair } from './helpers';
 import type { Node } from './types';
 
-import './isles';
+import './listing';
 
 const ticker$ = (app: Application) =>
   new Observable<number>((subscriber) => {

@@ -59,14 +59,3 @@ islesX.map((px) =>
     });
   }),
 );
-
-console.table({
-  height,
-  width,
-  freeSpaceX,
-  freeSpaceY,
-  marginPerIsleX,
-  marginPerIsleY,
-  fullIsleX,
-  fullIsleY,
-});

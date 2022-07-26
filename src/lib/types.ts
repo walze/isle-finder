@@ -20,3 +20,15 @@ export type NonEmptyArray<T> = [T, ...T[]];
 export type Grid = NonEmptyArray<Node>;
 
 export type NodeType = 'start' | 'end' | 'path' | 'wall';
+
+export type CSVRecord = {
+  itemDescription: string;
+  Date: string;
+  Member_number: string;
+};
+
+export type Product = {
+  index: number;
+  name: string;
+  price: number;
+};
