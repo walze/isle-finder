@@ -1,4 +1,4 @@
-import { type Text } from "pixi.js";
+import { type Text } from 'pixi.js';
 
 export type Node = {
   f: number;
@@ -19,4 +19,4 @@ export type NonEmptyArray<T> = [T, ...T[]];
 
 export type Grid = NonEmptyArray<Node>;
 
-export type NodeType = "start" | "end" | "path" | "wall";
+export type NodeType = 'start' | 'end' | 'path' | 'wall';

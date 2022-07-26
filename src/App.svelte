@@ -1,15 +1,11 @@
 <script lang="ts">
-import { onMount } from "svelte";
+import { onMount } from 'svelte';
 
+let canvas: HTMLCanvasElement;
 
-  let canvas: HTMLCanvasElement;
-
-  onMount(() => {
-    import("./lib/pixi")
-    .then(
-      (p) => p.startPixi(canvas)
-    );
-  });
+onMount(() => {
+  import('./lib/pixi').then((p) => p.startPixi(canvas));
+});
 </script>
 
 <canvas bind:this={canvas} />

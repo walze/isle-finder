@@ -1,7 +1,14 @@
-import { BehaviorSubject, identity, map, mergeMap, of, tap } from "rxjs";
-import { astar, calcScores } from "./astar";
-import { assert, pair } from "./helpers";
-import type { Grid, Node } from "./types";
+import {
+  BehaviorSubject,
+  identity,
+  map,
+  mergeMap,
+  of,
+  tap,
+} from 'rxjs';
+import { astar, calcScores } from './astar';
+import { assert, pair } from './helpers';
+import type { Grid, Node } from './types';
 
 export const nodeColors = {
   start: 0x00ff00,
@@ -49,22 +56,23 @@ export const makeNode = (coords: [number, number]): Node => {
 
 export const grid = [] as unknown as Grid;
 for (let x = 0; x < gridW; x++)
-  for (let y = 0; y < gridH; y++) grid[x * gridW + y] = makeNode([x, y]);
+  for (let y = 0; y < gridH; y++)
+    grid[x * gridW + y] = makeNode([x, y]);
 
 export const gridSet =
   ([x, y]: [number, number], value: Node) =>
-  (grid: Grid): void => {
-    assert(grid[x * gridW + y], `cannot get node at ${x}, ${y}`);
+  (g: Grid): void => {
+    assert(g[x * gridW + y], `cannot get node at ${x}, ${y}`);
 
-    grid[x * gridW + y] = value;
+    g[x * gridW + y] = value;
   };
 
 export const gridGet =
-  (grid: Grid) =>
+  (g: Grid) =>
   ([x, y]: [number, number]): Node => {
-    assert(grid[x * gridW + y], `cannot get node at ${x}, ${y}`);
+    assert(g[x * gridW + y], `cannot get node at ${x}, ${y}`);
 
-    return grid[x * gridW + y] as Node;
+    return g[x * gridW + y] as Node;
   };
 
 // Random start and end points
@@ -96,24 +104,29 @@ export const calcPath = ([n1, n2]: [Node, Node]) =>
   of(pair(n1, n2)).pipe(
     tap(() => {
       bestPath.getValue().forEach((node) => {
-        node.color = node.isPath ? nodeColors.path : nodeColors.wall;
+        node.color = node.isPath
+          ? nodeColors.path
+          : nodeColors.wall;
       });
     }),
     map((coords) => astar(grid)(coords)),
     tap((nodes) => bestPath.next(nodes)),
     mergeMap(identity),
     tap((node) => {
-      if (node.color !== nodeColors.end && node.color !== nodeColors.start)
+      if (
+        node.color !== nodeColors.end &&
+        node.color !== nodeColors.start
+      )
         node.color = 0x0000ff;
-    })
+    }),
   );
 
-export const getNeighbors = (grid: Grid) => (n: Node) => {
+export const getNeighbors = (g: Grid) => (n: Node) => {
   const [px, py] = n.coords;
   const neighbors: Node[] = [];
-  const getNode = gridGet(grid);
+  const getNode = gridGet(g);
 
-  for (let i = -1; i <= 1; i++)
+  for (let i = -1; i <= 1; i++) {
     for (let j = -1; j <= 1; j++) {
       const [x, y] = [px + i, py + j];
       if (x < 0 || x >= gridW || y < 0 || y >= gridH) continue;
@@ -121,6 +134,7 @@ export const getNeighbors = (grid: Grid) => (n: Node) => {
 
       neighbors.push(getNode([x, y]));
     }
+  }
 
   return neighbors;
 };

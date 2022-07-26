@@ -1,6 +1,6 @@
-import { grid, gridH, gridGet, gridW, nodeColors } from "./grid";
-import { range } from "./helpers";
-import type { Node } from "./types";
+import { grid, gridH, gridGet, gridW, nodeColors } from './grid';
+import { range } from './helpers';
+import type { Node } from './types';
 
 const nIslesX = Math.min(4, Math.floor(gridW / 3));
 const nIslesY = 2;
@@ -21,22 +21,29 @@ const fullIsleY = height + marginPerIsleY;
 
 const get = gridGet(grid);
 
-const wall: Partial<Node> = { isPath: false, color: nodeColors.wall };
+const wall: Partial<Node> = {
+  isPath: false,
+  color: nodeColors.wall,
+};
 
 const xs = range(0, nIslesX - 1).map(
   (i) =>
     i * fullIsleX +
-    (i === 0 ? Math.ceil(marginPerIsleX / 2) : Math.floor(marginPerIsleX / 2))
+    (i === 0
+      ? Math.ceil(marginPerIsleX / 2)
+      : Math.floor(marginPerIsleX / 2)),
 );
 
 const ys = range(0, nIslesY - 1).map(
   (i) =>
     i * fullIsleY +
-    (i === 0 ? Math.ceil(marginPerIsleY / 2) : Math.floor(marginPerIsleY / 2))
+    (i === 0
+      ? Math.ceil(marginPerIsleY / 2)
+      : Math.floor(marginPerIsleY / 2)),
 );
 
 const r = xs.map((px) =>
-  ys.map((py) => {
+  ys.forEach((py) => {
     range(py, py + height - 1).forEach((y) => {
       const n = get([px + 1, y]);
 
@@ -50,7 +57,7 @@ const r = xs.map((px) =>
       Object.assign(n, wall);
       Object.assign(n2, wall);
     });
-  })
+  }),
 );
 
 console.table({

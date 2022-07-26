@@ -1,0 +1,9 @@
+{
+  "semi": true,
+  "trailingComma": "all",
+  "singleQuote": true,
+  "printWidth": 65,
+  "endOfLine": "lf",
+  "singleAttributePerLine": true,
+  "svelteBracketNewLine": true
+}
