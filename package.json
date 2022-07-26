@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "vite -l info --open",
     "build": "vite build",
+    "optimize": "vite optimize",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
+    "csv": "^6.2.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-svelte3": "^4.0.0",
@@ -17,7 +19,9 @@
     "prettier": "^2.7.1",
     "ramda": "^0.28.0",
     "rxjs": "^7.5.6",
-    "svelte": "^3.49.0"
+    "svelte": "^3.49.0",
+    "svelte-check": "^2.8.0",
+    "svelte-preprocess": "^4.10.7"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^1.0.1",
@@ -27,8 +31,6 @@
     "eslint": "^8.20.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.26.0",
-    "svelte-check": "^2.8.0",
-    "svelte-preprocess": "^4.10.7",
     "tslib": "^2.4.0",
     "typescript": "^4.7.4",
     "vite": "^3.0.3"

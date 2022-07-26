@@ -26,7 +26,7 @@ const wall: Partial<Node> = {
   color: nodeColors.wall,
 };
 
-const xs = range(0, nIslesX - 1).map(
+export const islesX = range(0, nIslesX - 1).map(
   (i) =>
     i * fullIsleX +
     (i === 0
@@ -34,7 +34,7 @@ const xs = range(0, nIslesX - 1).map(
       : Math.floor(marginPerIsleX / 2)),
 );
 
-const ys = range(0, nIslesY - 1).map(
+export const islesY = range(0, nIslesY - 1).map(
   (i) =>
     i * fullIsleY +
     (i === 0
@@ -42,8 +42,8 @@ const ys = range(0, nIslesY - 1).map(
       : Math.floor(marginPerIsleY / 2)),
 );
 
-const r = xs.map((px) =>
-  ys.forEach((py) => {
+islesX.map((px) =>
+  islesY.forEach((py) => {
     range(py, py + height - 1).forEach((y) => {
       const n = get([px + 1, y]);
 
@@ -69,5 +69,4 @@ console.table({
   marginPerIsleY,
   fullIsleX,
   fullIsleY,
-  r,
 });
