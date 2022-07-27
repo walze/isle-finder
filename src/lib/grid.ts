@@ -1,11 +1,5 @@
-import {
-  BehaviorSubject,
-  identity,
-  map,
-  mergeMap,
-  of,
-  tap,
-} from 'rxjs';
+import { identity, map, mergeMap, of, tap } from 'rxjs';
+import { bestPath$ } from '../stores';
 import { astar, calcScores } from './astar';
 import { assert, pair } from './helpers';
 import type { Grid, Node } from './types';
@@ -98,19 +92,17 @@ Object.assign(startNode, {
 endNode.color = nodeColors.end;
 endNode.isPath = true;
 
-export const bestPath = new BehaviorSubject<Node[]>([]);
-
 export const calcPath = ([n1, n2]: [Node, Node]) =>
   of(pair(n1, n2)).pipe(
     tap(() => {
-      bestPath.getValue().forEach((node) => {
+      bestPath$.getValue().forEach((node) => {
         node.color = node.isPath
           ? nodeColors.path
           : nodeColors.wall;
       });
     }),
     map((coords) => astar(grid)(coords)),
-    tap((nodes) => bestPath.next(nodes)),
+    tap((nodes) => bestPath$.next(nodes)),
     mergeMap(identity),
     tap((node) => {
       if (

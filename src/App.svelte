@@ -1,39 +1,52 @@
 <script lang="ts">
-import './App.css';
+  import './App.css';
 
-import { onMount } from 'svelte';
-import { parse } from './lib/helpers';
-import type { CSVRecord } from './lib/types';
+  import { onMount, onDestroy } from 'svelte';
+  import { getData } from './dataset';
+  import { cart$ } from './stores';
 
-let canvas: HTMLCanvasElement;
+  let canvas: HTMLCanvasElement;
+  let search = '';
 
+  let cart = cart$.getValue();
+  cart$.subscribe((c) => (cart = c));
+  onDestroy(console.warn);
 
-const pdata = import('../dataset.csv?raw').then(m => m.default).then(data =>
-  parse<CSVRecord>(data).map((r, index) => ({
-    price: +r.Member_number / 100,
-    name: r.itemDescription,
-    index,
-  }))
-);
+  onMount(() => {
+    import('./lib/pixi').then((p) => p.startPixi(canvas));
+  });
 
-
-onMount(() => {
-  import('./lib/pixi').then((p) => p.startPixi(canvas));
-});
+  $: total = [...cart.values()]
+    .reduce((n, item) => n + item.price, 0)
+    .toFixed(2);
 </script>
 
-<h1 class="text-3xl font-bold underline">
-  Hello world!
-</h1>
+<main class="container mx-auto">
+  <input
+    class="text-xl"
+    type="text"
+    bind:value={search}
+    placeholder="search"
+  />
 
-{#await pdata}
-	<p>loading...</p>
-{:then data}
-<ul>
-	{#each data as item}
-		<li>{item.name} x {item.price}</li>
-	{/each}
-</ul>
-{/await}
+  <h1 class="text-3xl mb-2 mt-1">
+    total: ${total}
+  </h1>
 
-<canvas bind:this={canvas} />
+  {#await getData()}
+    <p>loading...</p>
+  {:then data}
+    <ul class="overflow-scroll max-h-60">
+      {#each data.filter((d) => d.name?.includes(search) && !cart.get(d.name)) as item}
+        <li
+          class="hover:bg-slate-100 cursor-pointer hover:font-bold"
+          on:click={() => cart$.next(cart.set(item.name, item))}
+        >
+          {item.name} - ${item.price}
+        </li>
+      {/each}
+    </ul>
+  {/await}
+
+  <canvas bind:this={canvas} />
+</main>

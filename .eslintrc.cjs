@@ -16,7 +16,7 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint', 'svelte3', 'prettier'],
+  plugins: ['@typescript-eslint', 'prettier', 'svelte3'],
   overrides: [
     {
       files: ['*.svelte'],
