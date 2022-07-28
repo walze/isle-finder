@@ -7,8 +7,8 @@ const nIslesY = 2;
 
 const padding = 0.1;
 
-const width = 3;
-const height = gridH * (1 / nIslesY) - gridH * padding;
+export const width = 3;
+export const height = gridH * (1 / nIslesY) - gridH * padding;
 
 const freeSpaceX = gridW - width * nIslesX;
 const freeSpaceY = gridH - height * nIslesY;

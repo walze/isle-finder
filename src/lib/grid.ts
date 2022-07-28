@@ -9,6 +9,8 @@ export const nodeColors = {
   end: 0xff0000,
   path: 0xffffff,
   wall: 0,
+  slot: 0xcccccc,
+  inCart: 0xffff00,
 };
 
 export const screenW = 1080;

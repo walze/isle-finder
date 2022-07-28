@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@sveltejs/vite-plugin-svelte": "^1.0.1",
+    "@types/ramda": "^0.28.15",
     "autoprefixer": "^10.4.7",
     "csv": "^6.2.0",
     "eslint-config-prettier": "^8.5.0",

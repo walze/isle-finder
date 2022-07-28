@@ -4,6 +4,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { getData } from './dataset';
   import { cart$ } from './stores';
+  import { lastValueFrom } from 'rxjs';
 
   let canvas: HTMLCanvasElement;
   let search = '';
@@ -33,7 +34,7 @@
     total: ${total}
   </h1>
 
-  {#await getData()}
+  {#await lastValueFrom(getData())}
     <p>loading...</p>
   {:then data}
     <ul class="overflow-scroll max-h-60">
