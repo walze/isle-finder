@@ -72,27 +72,11 @@ export const gridGet =
   };
 
 // Random start and end points
-export const [startNode, endNode] = [
-  gridGet(grid)([
-    Math.floor(Math.random() * gridW),
-    Math.floor(Math.random() * gridH),
-  ]),
-  gridGet(grid)([
-    Math.floor(Math.random() * gridW),
-    Math.floor(Math.random() * gridH),
-  ]),
-];
+export const startNode = gridGet(grid)([0, 0]);
 
 startNode.color = nodeColors.start;
 startNode.g = 0;
 startNode.isPath = true;
-Object.assign(startNode, {
-  ...calcScores(startNode, startNode, endNode),
-  parent: null,
-});
-
-endNode.color = nodeColors.end;
-endNode.isPath = true;
 
 export const calcPath = ([n1, n2]: [Node, Node]) =>
   of(pair(n1, n2)).pipe(

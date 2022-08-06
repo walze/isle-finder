@@ -19,7 +19,6 @@ import {
   gridGet,
   calcPath,
   startNode,
-  endNode,
   nodeColors,
 } from './grid';
 import { pair } from './helpers';
@@ -37,7 +36,7 @@ const nodeFromClick = pipe(
   map(gridGet(grid)),
 );
 
-const calcPath$ = calcPath(pair(startNode, endNode));
+const calcPath$ = calcPath(pair(startNode, startNode));
 
 const drawNode = (gfx: Graphics) => (node: Node) => {
   const { x, y, color, f, g, h, text, px, py } = node;

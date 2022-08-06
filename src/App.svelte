@@ -1,25 +1,26 @@
 <script lang="ts">
   import './App.css';
 
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount } from 'svelte';
   import { getData } from './dataset';
-  import { cart$ } from './stores';
-  import { lastValueFrom } from 'rxjs';
+  import { cart } from './stores';
+  import { toArray } from 'rxjs';
+  import { slots$ } from './lib/listing';
 
   let canvas: HTMLCanvasElement;
   let search = '';
 
-  let cart = cart$.getValue();
-  cart$.subscribe((c) => (cart = c));
-  onDestroy(console.warn);
+  const slots = slots$.pipe(toArray());
 
   onMount(() => {
     import('./lib/pixi').then((p) => p.startPixi(canvas));
   });
 
-  $: total = [...cart.values()]
+  $: total = [...$cart.values()]
     .reduce((n, item) => n + item.price, 0)
     .toFixed(2);
+
+  const data = getData();
 </script>
 
 <main class="container mx-auto">
@@ -34,20 +35,18 @@
     total: ${total}
   </h1>
 
-  {#await lastValueFrom(getData())}
-    <p>loading...</p>
-  {:then data}
-    <ul class="overflow-scroll max-h-60">
-      {#each data.filter((d) => d.name?.includes(search) && !cart.get(d.name)) as item}
-        <li
-          class="hover:bg-slate-100 cursor-pointer hover:font-bold"
-          on:click={() => cart$.next(cart.set(item.name, item))}
-        >
-          {item.name} - ${item.price}
-        </li>
-      {/each}
-    </ul>
-  {/await}
+  <ul class="overflow-scroll max-h-60">
+    {#each $data
+      .filter((d) => d.name?.includes(search) && !$cart.get(d.name))
+      .slice(0, $slots.length) as item}
+      <li
+        class="hover:bg-slate-100 cursor-pointer hover:font-bold"
+        on:click={() => cart.next($cart.set(item.name, item))}
+      >
+        {item.name} - ${item.price}
+      </li>
+    {/each}
+  </ul>
 
   <canvas bind:this={canvas} />
 </main>

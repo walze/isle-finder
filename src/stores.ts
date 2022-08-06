@@ -3,6 +3,6 @@ import type { Node, Product } from './lib/types';
 
 export const bestPath$ = new BehaviorSubject<Node[]>([]);
 
-export const cart$ = new BehaviorSubject<Map<string, Product>>(
+export const cart = new BehaviorSubject<Map<string, Product>>(
   new Map(),
 );
