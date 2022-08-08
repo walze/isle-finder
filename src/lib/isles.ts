@@ -1,8 +1,8 @@
 import { pair } from 'ramda';
-import { from, map, mergeMap, Observable } from 'rxjs';
+import { from, map, mergeMap } from 'rxjs';
 import { gridH, gridW, nodeColors, gridSet } from './grid';
 import { range } from './helpers';
-import type { Grid, Node } from './types';
+import type { Node } from './types';
 
 const nIslesX = Math.min(4, Math.floor(gridW / 3));
 const nIslesY = 2;
@@ -42,17 +42,14 @@ export const islesY = range(0, nIslesY - 1).map(
       : Math.floor(marginPerIsleY / 2)),
 );
 
-export const setIsles = (g: Observable<Grid>) =>
-  from(islesX).pipe(
-    mergeMap((px) =>
-      from(islesY).pipe(map((py) => pair(px, py))),
+export const drawIsles = from(islesX).pipe(
+  mergeMap((px) => from(islesY).pipe(map((py) => pair(px, py)))),
+  mergeMap(([px, py]) => [
+    ...range(px, px + width - 1).map((x) => pair(x, py)),
+    ...range(px, px + width - 1).map((x) =>
+      pair(x, py + height - 1),
     ),
-    mergeMap(([px, py]) => [
-      ...range(px, px + width - 1).map((x) => pair(x, py)),
-      ...range(px, px + width - 1).map((x) =>
-        pair(x, py + height - 1),
-      ),
-      ...range(py, py + height - 1).map((y) => pair(px + 1, y)),
-    ]),
-    mergeMap(([x, y]) => g.pipe(map(gridSet([x, y], wall)))),
-  );
+    ...range(py, py + height - 1).map((y) => pair(px + 1, y)),
+  ]),
+  map(([x, y]) => gridSet([x, y], wall)),
+);

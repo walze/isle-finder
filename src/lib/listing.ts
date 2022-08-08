@@ -4,53 +4,38 @@ import {
   range,
   mergeMap,
   map,
-  identity,
-  tap,
-  toArray,
-  filter,
+  mergeAll,
+  zipWith,
+  withLatestFrom,
 } from 'rxjs';
 import { getData } from '../dataset';
 import { cart } from '../stores';
-import { grid, gridGet, nodeColors } from './grid';
+import { gridSet, nodeColors } from './grid';
 import { islesX, height, islesY } from './isles';
 
-const getNode = gridGet(grid.getValue());
-
-export const slots$ = from([
-  ...islesX,
-  ...islesX.map((n) => n + 2),
-]).pipe(
-  mergeMap((x) =>
-    from(islesY).pipe(
-      mergeMap((y) => range(y + 1, height - 2)),
-      map(pair(x)),
-      map(getNode),
-    ),
-  ),
-  mergeMap((node, i) =>
-    getData().pipe(
-      mergeMap(identity),
-      filter((_, i2) => i === i2),
-      map(pair(node)),
+export const slots$ = getData().pipe(
+  mergeAll(),
+  map((p) => p.name),
+  zipWith(
+    from([...islesX, ...islesX.map((n) => n + 2)]).pipe(
+      mergeMap((x) =>
+        from(islesY).pipe(
+          mergeMap((y) => range(y + 1, height - 2)),
+          map(pair(x)),
+        ),
+      ),
     ),
   ),
 );
 
-cart
-  .pipe(
-    mergeMap((c) =>
-      slots$.pipe(
-        tap(([node, product]) => {
-          if (c.has(product.name)) {
-            node.color = nodeColors.inCart;
-          } else {
-            node.color = nodeColors.slot;
-          }
-        }),
-        toArray(),
-      ),
-    ),
-  )
-  .subscribe();
+export const drawSlots = slots$.pipe(
+  withLatestFrom(cart),
+  map(([[name, co], c]) =>
+    gridSet(co, {
+      h: 1234,
+      color: c.has(name) ? nodeColors.inCart : nodeColors.slot,
+    }),
+  ),
+);
 
 console.table({ islesX, islesY, height, slots$ });

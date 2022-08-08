@@ -1,3 +1,4 @@
+import { pair } from 'ramda';
 import {
   BehaviorSubject,
   identity,
@@ -7,9 +8,9 @@ import {
   tap,
 } from 'rxjs';
 import { bestPath$ } from '../stores';
-import { astar, calcScores } from './astar';
-import { assert, pair } from './helpers';
-import type { Grid, Grid$, Node } from './types';
+import { astar } from './astar';
+import { assert } from './helpers';
+import type { Grid, Node } from './types';
 
 export const nodeColors = {
   start: 0x00ff00,
@@ -75,7 +76,7 @@ export const gridSet =
 
     g[x * gridW + y] = { ...g[x * gridW + y], ...value } as Node;
 
-    return g;
+    return [...g];
   };
 
 export const gridGet =

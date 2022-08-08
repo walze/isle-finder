@@ -1,15 +1,12 @@
 import { Application, Graphics, Text } from 'pixi.js';
 import {
-  animationFrames,
-  from,
   fromEvent,
-  identity,
   map,
+  merge,
   mergeAll,
   mergeMap,
   pipe,
   tap,
-  throttleTime,
 } from 'rxjs';
 
 import { applyTo, compose } from 'ramda';
@@ -23,11 +20,11 @@ import {
   calcPath,
   startNode,
 } from './grid';
-import { pair } from './helpers';
+import { foldGrid, pair } from './helpers';
 import type { Node } from './types';
 
-import './listing';
-import { setIsles } from './isles';
+import { drawIsles } from './isles';
+import { drawSlots } from './listing';
 
 const nodeFromClick = pipe(
   map(({ offsetX, offsetY }: MouseEvent) =>
@@ -102,14 +99,23 @@ export const startPixi = async (view: HTMLCanvasElement) => {
 
   click$.pipe(nodeFromClick, tap(console.warn)).subscribe();
 
-  grid.pipe(setIsles, mergeAll()).subscribe(drawNode(gph));
+  const draws = merge(drawIsles, drawSlots);
+
+  grid
+    .pipe(mergeMap(foldGrid(draws)), mergeAll())
+    .subscribe((a) => drawNode(gph)(a));
 
   // animationFrames()
   //   .pipe(
-  //     throttleTime(1000 / 3),
+  //     throttleTime(1000 / 2),
   //     mergeMap(() => grid),
-  //     mergeMap(identity),
-  //     tap((a) => console.log(a.color)),
+  //     mergeMap((g) => {
+  //       drawSlots(g).subscribe(console.log);
+
+  //       return of(g);
+  //     }),
+  //     tapLog('warn'),
+  //     mergeAll(),
   //   )
   //   .subscribe(drawNode(gph));
 };

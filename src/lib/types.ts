@@ -34,3 +34,5 @@ export type Product = {
   name: string;
   price: number;
 };
+
+export type Identity = <T>(x: T) => T;

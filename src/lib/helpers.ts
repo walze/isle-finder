@@ -1,5 +1,6 @@
-import { tap } from 'rxjs';
-import type { NonEmptyArray } from './types';
+import { type AnyFunction } from 'ramda';
+import { Observable, reduce, tap } from 'rxjs';
+import type { Grid, NonEmptyArray } from './types';
 
 export const pair = <A, B>(a: A, b: B): [A, B] => [a, b];
 
@@ -43,5 +44,10 @@ export const parse = <T extends Record<string, unknown>>(
   return data;
 };
 
-// eslint-disable-next-line no-console
-export const taplog = tap(console.log);
+export const tapLog = <T>(m: keyof Console = 'log') =>
+  // eslint-disable-next-line no-console
+  tap<T>(console[m] as AnyFunction);
+
+export const foldGrid =
+  (o: Observable<(_: Grid) => Grid>) => (g: Grid) =>
+    o.pipe(reduce((gg, f) => f(gg), g));

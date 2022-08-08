@@ -16,7 +16,7 @@
   } from 'rxjs';
   import { slots$ } from './lib/listing';
   import { astar } from './lib/astar';
-  import { grid, startNode } from './lib/grid';
+  import { grid, gridGet, startNode } from './lib/grid';
   import { assert } from './lib/helpers';
   import type { Node } from './lib/types';
 
@@ -52,21 +52,24 @@
   };
 
   $: asd = [...$cart.values()]
-    .map((p) =>
-      $slots.find(([, product]) => product.name === p.name),
-    )
+    .map((p) => $slots.find(([name]) => name === p.name))
     .map((a) => {
       assert(a, 'product not found');
 
-      return a[0];
+      return a[1];
     })
     .sort((a, b) => {
       console.warn(a, b);
 
-      return f(a) - f(b);
+      return (
+        f(gridGet(grid.value)(a)) - f(gridGet(grid.value)(b))
+      );
     });
 
-  $: console.log(asd);
+  $: console.log(
+    asd,
+    // astar(grid.value)([startNode, gridGet(grid.value)([0, 11])]),
+  );
   $: console.log($slots.length, $data.length);
 </script>
 
