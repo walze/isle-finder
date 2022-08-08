@@ -1,4 +1,5 @@
 import { type Text } from 'pixi.js';
+import { BehaviorSubject } from 'rxjs';
 
 export type Node = {
   f: number;
@@ -18,6 +19,7 @@ export type Node = {
 export type NonEmptyArray<T> = [T, ...T[]];
 
 export type Grid = NonEmptyArray<Node>;
+export type Grid$ = BehaviorSubject<Grid>;
 
 export type NodeType = 'start' | 'end' | 'path' | 'wall';
 

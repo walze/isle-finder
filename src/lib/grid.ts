@@ -1,8 +1,15 @@
-import { identity, map, mergeMap, of, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  identity,
+  map,
+  mergeMap,
+  of,
+  tap,
+} from 'rxjs';
 import { bestPath$ } from '../stores';
 import { astar, calcScores } from './astar';
 import { assert, pair } from './helpers';
-import type { Grid, Node } from './types';
+import type { Grid, Grid$, Node } from './types';
 
 export const nodeColors = {
   start: 0x00ff00,
@@ -50,17 +57,25 @@ export const makeNode = (coords: [number, number]): Node => {
   };
 };
 
-export const grid = [] as unknown as Grid;
-for (let x = 0; x < gridW; x++)
-  for (let y = 0; y < gridH; y++)
-    grid[x * gridW + y] = makeNode([x, y]);
+const makeGrid = (): Grid => {
+  const g = [] as unknown as Grid;
+  for (let x = 0; x < gridW; x++)
+    for (let y = 0; y < gridH; y++)
+      g[x * gridW + y] = makeNode([x, y]);
+
+  return g;
+};
+
+export const grid = new BehaviorSubject<Grid>(makeGrid());
 
 export const gridSet =
-  ([x, y]: [number, number], value: Node) =>
-  (g: Grid): void => {
+  ([x, y]: [number, number], value: Partial<Node>) =>
+  (g: Grid): Grid => {
     assert(g[x * gridW + y], `cannot get node at ${x}, ${y}`);
 
-    g[x * gridW + y] = value;
+    g[x * gridW + y] = { ...g[x * gridW + y], ...value } as Node;
+
+    return g;
   };
 
 export const gridGet =
@@ -68,15 +83,17 @@ export const gridGet =
   ([x, y]: [number, number]): Node => {
     assert(g[x * gridW + y], `cannot get node at ${x}, ${y}`);
 
-    return g[x * gridW + y] as Node;
+    return { ...g[x * gridW + y] } as Node;
   };
 
-// Random start and end points
-export const startNode = gridGet(grid)([0, 0]);
-
-startNode.color = nodeColors.start;
-startNode.g = 0;
-startNode.isPath = true;
+grid.next(
+  gridSet([0, 0], {
+    color: nodeColors.start,
+    g: 0,
+    isPath: true,
+  })(grid.getValue()),
+);
+export const startNode = gridGet(grid.getValue())([0, 0]);
 
 export const calcPath = ([n1, n2]: [Node, Node]) =>
   of(pair(n1, n2)).pipe(
@@ -87,7 +104,7 @@ export const calcPath = ([n1, n2]: [Node, Node]) =>
           : nodeColors.wall;
       });
     }),
-    map((coords) => astar(grid)(coords)),
+    map((coords) => astar(grid.getValue())(coords)),
     tap((nodes) => bestPath$.next(nodes)),
     mergeMap(identity),
     tap((node) => {

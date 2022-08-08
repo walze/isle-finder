@@ -4,6 +4,7 @@ specifiers:
   '@sveltejs/vite-plugin-svelte': ^1.0.1
   '@tsconfig/svelte': ^3.0.0
   '@types/ramda': ^0.28.15
+  '@types/shuffle-array': ^1.0.2
   '@typescript-eslint/eslint-plugin': ^5.32.0
   '@typescript-eslint/parser': ^5.32.0
   autoprefixer: ^10.4.8
@@ -19,6 +20,7 @@ specifiers:
   prettier: ^2.7.1
   ramda: ^0.28.0
   rxjs: ^7.5.6
+  shuffle-array: ^1.0.1
   svelte: ^3.49.0
   svelte-check: ^2.8.0
   svelte-preprocess: ^4.10.7
@@ -30,6 +32,7 @@ specifiers:
 dependencies:
   '@sveltejs/vite-plugin-svelte': 1.0.1_svelte@3.49.0+vite@3.0.4
   '@types/ramda': 0.28.15
+  '@types/shuffle-array': 1.0.2
   autoprefixer: 10.4.8_postcss@8.4.16
   csv: 6.2.0
   eslint-config-prettier: 8.5.0_eslint@8.21.0
@@ -40,6 +43,7 @@ dependencies:
   prettier: 2.7.1
   ramda: 0.28.0
   rxjs: 7.5.6
+  shuffle-array: 1.0.1
   svelte: 3.49.0
   svelte-check: 2.8.0_vylzxgme5yisu3bsyvcau4hjtq
   svelte-preprocess: 4.10.7_fje22ktja5v2dh6nbkissncqme
@@ -635,6 +639,10 @@ packages:
     resolution: {integrity: sha512-BPdoIt1lfJ6B7rw35ncdwBZrAssjcwzI5LByIrYs+tpXlj/CAkuVdRsgZDdP4lq5EjyWzwxZCqAoFyHKFwp32g==}
     dependencies:
       '@types/node': 18.6.1
+    dev: false
+
+  /@types/shuffle-array/1.0.2:
+    resolution: {integrity: sha512-X8AFrn+D86HFJKer0n2qbG67jHMB4f/QxG28hvNHiouAn84QHVxhuCgGict5djhKP9GZPH2TjCxzf54khqawzQ==}
     dev: false
 
   /@typescript-eslint/eslint-plugin/5.32.0_iosr3hrei2tubxveewluhu5lhy:
@@ -2475,6 +2483,10 @@ packages:
   /shebang-regex/3.0.0:
     resolution: {integrity: sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==}
     engines: {node: '>=8'}
+
+  /shuffle-array/1.0.1:
+    resolution: {integrity: sha512-0TFRU8zVQaLatWKr0/czo19VyPNgb/a3sBc1GAjVfivfzEGaS54vueNgtAu/8/pW7EM/VF5fwq9zgpLdGyRmVw==}
+    dev: false
 
   /side-channel/1.0.4:
     resolution: {integrity: sha512-q5XPytqFEIKHkGdiMIrY10mvLRvnQh42/+GoBlFW3b2LXLE2xxJpZFdm94we0BaoV3RwJyGqg5wS7epxTv0Zvw==}

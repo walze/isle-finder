@@ -1,6 +1,8 @@
-import { grid, gridH, gridGet, gridW, nodeColors } from './grid';
+import { pair } from 'ramda';
+import { from, map, mergeMap, Observable } from 'rxjs';
+import { gridH, gridW, nodeColors, gridSet } from './grid';
 import { range } from './helpers';
-import type { Node } from './types';
+import type { Grid, Node } from './types';
 
 const nIslesX = Math.min(4, Math.floor(gridW / 3));
 const nIslesY = 2;
@@ -18,8 +20,6 @@ const marginPerIsleY = Math.floor(freeSpaceY / nIslesY);
 
 const fullIsleX = width + marginPerIsleX;
 const fullIsleY = height + marginPerIsleY;
-
-const get = gridGet(grid);
 
 const wall: Partial<Node> = {
   isPath: false,
@@ -42,20 +42,17 @@ export const islesY = range(0, nIslesY - 1).map(
       : Math.floor(marginPerIsleY / 2)),
 );
 
-islesX.map((px) =>
-  islesY.forEach((py) => {
-    range(py, py + height - 1).forEach((y) => {
-      const n = get([px + 1, y]);
-
-      Object.assign(n, wall);
-    });
-
-    range(px, px + width - 1).forEach((x) => {
-      const n = get([x, py]);
-      const n2 = get([x, py + height - 1]);
-
-      Object.assign(n, wall);
-      Object.assign(n2, wall);
-    });
-  }),
-);
+export const setIsles = (g: Observable<Grid>) =>
+  from(islesX).pipe(
+    mergeMap((px) =>
+      from(islesY).pipe(map((py) => pair(px, py))),
+    ),
+    mergeMap(([px, py]) => [
+      ...range(px, px + width - 1).map((x) => pair(x, py)),
+      ...range(px, px + width - 1).map((x) =>
+        pair(x, py + height - 1),
+      ),
+      ...range(py, py + height - 1).map((y) => pair(px + 1, y)),
+    ]),
+    mergeMap(([x, y]) => g.pipe(map(gridSet([x, y], wall)))),
+  );

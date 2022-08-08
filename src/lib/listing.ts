@@ -14,7 +14,7 @@ import { cart } from '../stores';
 import { grid, gridGet, nodeColors } from './grid';
 import { islesX, height, islesY } from './isles';
 
-const getNode = gridGet(grid);
+const getNode = gridGet(grid.getValue());
 
 export const slots$ = from([
   ...islesX,
@@ -48,7 +48,6 @@ cart
           }
         }),
         toArray(),
-        tap(console.log),
       ),
     ),
   )

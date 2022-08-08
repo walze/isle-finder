@@ -1,15 +1,18 @@
 import { Application, Graphics, Text } from 'pixi.js';
 import {
   animationFrames,
+  from,
   fromEvent,
+  identity,
   map,
+  mergeAll,
   mergeMap,
   pipe,
-  switchMap,
   tap,
   throttleTime,
 } from 'rxjs';
 
+import { applyTo, compose } from 'ramda';
 import {
   screenW,
   screenH,
@@ -19,12 +22,12 @@ import {
   gridGet,
   calcPath,
   startNode,
-  nodeColors,
 } from './grid';
 import { pair } from './helpers';
 import type { Node } from './types';
 
 import './listing';
+import { setIsles } from './isles';
 
 const nodeFromClick = pipe(
   map(({ offsetX, offsetY }: MouseEvent) =>
@@ -33,9 +36,9 @@ const nodeFromClick = pipe(
       Math.floor(offsetY / cellH),
     ),
   ),
-  map(gridGet(grid)),
+  mergeMap((e) => grid.pipe(map(compose(applyTo(e), gridGet)))),
 );
-
+// grid -> gridGet(grid) -> coords -> node
 const calcPath$ = calcPath(pair(startNode, startNode));
 
 const drawNode = (gfx: Graphics) => (node: Node) => {
@@ -97,34 +100,16 @@ export const startPixi = async (view: HTMLCanvasElement) => {
 
   app.stage.addChild(gph);
 
-  click$
-    .pipe(
-      nodeFromClick,
-      tap(console.warn),
-      tap(() =>
-        grid.forEach((n) => {
-          n.f = Number.MAX_SAFE_INTEGER;
-          n.g = Number.MAX_SAFE_INTEGER;
-          n.h = Number.MAX_SAFE_INTEGER;
-          n.parent = null;
+  click$.pipe(nodeFromClick, tap(console.warn)).subscribe();
 
-          startNode.g = 0;
-        }),
-      ),
-      tap((n) => {
-        n.color = nodeColors.wall;
-        n.isPath = false;
-      }),
-      switchMap(() => calcPath$),
-    )
-    .subscribe();
+  grid.pipe(setIsles, mergeAll()).subscribe(drawNode(gph));
 
-  animationFrames()
-    .pipe(
-      throttleTime(1000 / 3),
-      mergeMap(() => grid),
-    )
-    .subscribe(drawNode(gph));
-
-  calcPath$.subscribe();
+  // animationFrames()
+  //   .pipe(
+  //     throttleTime(1000 / 3),
+  //     mergeMap(() => grid),
+  //     mergeMap(identity),
+  //     tap((a) => console.log(a.color)),
+  //   )
+  //   .subscribe(drawNode(gph));
 };

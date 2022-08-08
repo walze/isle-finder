@@ -1,3 +1,4 @@
+import { tap } from 'rxjs';
 import type { NonEmptyArray } from './types';
 
 export const pair = <A, B>(a: A, b: B): [A, B] => [a, b];
@@ -8,8 +9,8 @@ export const range = (start: number, stop: number, step = 1) =>
     (_, i) => start + i * step,
   );
 
-type Assert = (
-  value: any,
+type Assert = <T>(
+  value: T,
   message?: string | Error,
 ) => asserts value;
 
@@ -41,3 +42,6 @@ export const parse = <T extends Record<string, unknown>>(
 
   return data;
 };
+
+// eslint-disable-next-line no-console
+export const taplog = tap(console.log);
