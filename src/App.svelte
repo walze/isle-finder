@@ -10,15 +10,23 @@
     identity,
     map,
     mergeMap,
+    pairwise,
     reduce,
     take,
     toArray,
   } from 'rxjs';
   import { slots$ } from './lib/listing';
   import { astar } from './lib/astar';
-  import { grid, gridGet, startNode } from './lib/grid';
+  import {
+    calcPath,
+    gridGet,
+    startNode,
+    grid,
+  } from './lib/grid';
   import { assert } from './lib/helpers';
   import type { Node } from './lib/types';
+  import { pair } from 'ramda';
+  import shuffleArray from 'shuffle-array';
 
   let canvas: HTMLCanvasElement;
   let search = '';
@@ -31,8 +39,8 @@
   });
 
   $: total = from($cart.values()).pipe(
-    reduce((n, item) => n + item.price, 0),
-    map((n) => n.toFixed(2)),
+    reduce((n, item) => n + item, ''),
+    // map((n) => n.toFixed(2)),
   );
 
   $: data = getData().pipe(
@@ -42,35 +50,35 @@
     ),
     take($slots.length),
     toArray(),
-    // map((data) => shuffle(data)),
+    map((data) => shuffleArray(data)),
   );
 
-  const f = (a: Node | number): number => {
+  $: f = (a: Node | number): number => {
     return typeof a === 'number'
       ? a
-      : astar(grid.value)([startNode, a]).length;
+      : astar([...$grid])([startNode, a]).length;
   };
 
-  $: asd = [...$cart.values()]
-    .map((p) => $slots.find(([name]) => name === p.name))
+  $: paths = [...$cart.values()]
+    .map((p) => $slots.find(([name]) => name === p))
     .map((a) => {
       assert(a, 'product not found');
 
       return a[1];
     })
-    .sort((a, b) => {
-      console.warn(a, b);
+    .sort((a, b) => f(gridGet(a)($grid)) - f(gridGet(b)($grid)));
 
-      return (
-        f(gridGet(grid.value)(a)) - f(gridGet(grid.value)(b))
-      );
-    });
+  $: from([pair(0, 0), ...paths])
+    .pipe(
+      // skip(paths.length - 1),
+      map(gridGet),
+      map((f) => f($grid)),
+      pairwise(),
+      calcPath,
+    )
+    .subscribe(console.warn);
 
-  $: console.log(
-    asd,
-    // astar(grid.value)([startNode, gridGet(grid.value)([0, 11])]),
-  );
-  $: console.log($slots.length, $data.length);
+  $: console.log(123, gridGet([1, 2])($grid));
 </script>
 
 <main class="container mx-auto">
@@ -93,7 +101,9 @@
     {#each $data || [] as item}
       <li
         class="hover:bg-slate-100 cursor-pointer hover:font-bold"
-        on:click={() => cart.next($cart.set(item.name, item))}
+        on:click={() => {
+          cart.next(new Set($cart.add(item.name)));
+        }}
       >
         {item.name} - ${item.price}
       </li>

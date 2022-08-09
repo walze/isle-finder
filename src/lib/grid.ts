@@ -1,13 +1,11 @@
-import { pair } from 'ramda';
 import {
   BehaviorSubject,
-  identity,
   map,
-  mergeMap,
-  of,
+  mergeAll,
+  pipe,
   tap,
+  toArray,
 } from 'rxjs';
-import { bestPath$ } from '../stores';
 import { astar } from './astar';
 import { assert } from './helpers';
 import type { Grid, Node } from './types';
@@ -17,7 +15,7 @@ export const nodeColors = {
   end: 0xff0000,
   path: 0xffffff,
   wall: 0,
-  slot: 0xcccccc,
+  slot: 0xaaaaaa,
   inCart: 0xffff00,
 };
 
@@ -28,14 +26,6 @@ const size = 20;
 
 export const [gridW, gridH] = [size, size];
 export const [cellW, cellH] = [screenW / gridW, screenH / gridH];
-
-console.table({
-  size,
-  gridW,
-  gridH,
-  cellW,
-  cellH,
-});
 
 export const makeNode = (coords: [number, number]): Node => {
   const [x, y] = coords;
@@ -69,6 +59,14 @@ const makeGrid = (): Grid => {
 
 export const grid = new BehaviorSubject<Grid>(makeGrid());
 
+console.table({
+  size,
+  gridW,
+  gridH,
+  cellW,
+  cellH,
+});
+
 export const gridSet =
   ([x, y]: [number, number], value: Partial<Node>) =>
   (g: Grid): Grid => {
@@ -76,51 +74,43 @@ export const gridSet =
 
     g[x * gridW + y] = { ...g[x * gridW + y], ...value } as Node;
 
-    return [...g];
+    return g;
   };
 
 export const gridGet =
-  (g: Grid) =>
-  ([x, y]: [number, number]): Node => {
+  ([x, y]: [number, number]) =>
+  (g: Grid): Node => {
     assert(g[x * gridW + y], `cannot get node at ${x}, ${y}`);
 
     return { ...g[x * gridW + y] } as Node;
   };
 
-grid.next(
-  gridSet([0, 0], {
-    color: nodeColors.start,
-    g: 0,
-    isPath: true,
-  })(grid.getValue()),
+gridSet([0, 0], {
+  color: nodeColors.start,
+  g: 0,
+  isPath: true,
+})(grid.value);
+export const startNode = gridGet([0, 0])(grid.value);
+
+export const calcPath = pipe(
+  map((ns: [Node, Node]) => astar([...grid.value])(ns)),
+  mergeAll(),
+  tap((node) => {
+    if (
+      node.color !== nodeColors.end &&
+      node.color !== nodeColors.start &&
+      node.color !== nodeColors.slot
+    )
+      grid.next(
+        gridSet(node.coords, { color: 0x0000ff })(grid.value),
+      );
+  }),
+  toArray(),
 );
-export const startNode = gridGet(grid.getValue())([0, 0]);
 
-export const calcPath = ([n1, n2]: [Node, Node]) =>
-  of(pair(n1, n2)).pipe(
-    tap(() => {
-      bestPath$.getValue().forEach((node) => {
-        node.color = node.isPath
-          ? nodeColors.path
-          : nodeColors.wall;
-      });
-    }),
-    map((coords) => astar(grid.getValue())(coords)),
-    tap((nodes) => bestPath$.next(nodes)),
-    mergeMap(identity),
-    tap((node) => {
-      if (
-        node.color !== nodeColors.end &&
-        node.color !== nodeColors.start
-      )
-        node.color = 0x0000ff;
-    }),
-  );
-
-export const getNeighbors = (g: Grid) => (n: Node) => {
+export const getNeighbors = (n: Node) => {
   const [px, py] = n.coords;
-  const neighbors: Node[] = [];
-  const getNode = gridGet(g);
+  const getters: ((g: Grid) => Node)[] = [];
 
   for (let i = -1; i <= 1; i++) {
     for (let j = -1; j <= 1; j++) {
@@ -128,9 +118,11 @@ export const getNeighbors = (g: Grid) => (n: Node) => {
       if (x < 0 || x >= gridW || y < 0 || y >= gridH) continue;
       if (i === 0 && j === 0) continue;
 
-      neighbors.push(getNode([x, y]));
+      const g = gridGet([x, y]);
+
+      getters.push(g);
     }
   }
 
-  return neighbors;
+  return getters;
 };

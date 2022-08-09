@@ -1,6 +1,14 @@
-import { type AnyFunction } from 'ramda';
-import { Observable, reduce, tap } from 'rxjs';
-import type { Grid, NonEmptyArray } from './types';
+import {
+  ap,
+  apply,
+  applyTo,
+  juxt,
+  pipe,
+  reduce,
+  type AnyFunction,
+} from 'ramda';
+import { map, mergeMap, Observable, tap } from 'rxjs';
+import type { Grid, Node, NonEmptyArray } from './types';
 
 export const pair = <A, B>(a: A, b: B): [A, B] => [a, b];
 
@@ -44,10 +52,16 @@ export const parse = <T extends Record<string, unknown>>(
   return data;
 };
 
+export const mergeCombine =
+  <A>(a: Observable<A>) =>
+  <B>(b: Observable<B>) =>
+    a.pipe(mergeMap((x) => b.pipe(map((y) => pair(x, y)))));
+
 export const tapLog = <T>(m: keyof Console = 'log') =>
   // eslint-disable-next-line no-console
   tap<T>(console[m] as AnyFunction);
 
-export const foldGrid =
-  (o: Observable<(_: Grid) => Grid>) => (g: Grid) =>
-    o.pipe(reduce((gg, f) => f(gg), g));
+export const foldGrid = (o: Observable<((g: Grid) => Grid)[]>) =>
+  o.pipe(
+    map((fs) => (g: Grid) => fs.reduce((gg, f) => f(gg), g)),
+  );

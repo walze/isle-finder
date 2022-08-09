@@ -1,5 +1,5 @@
 import { pair } from 'ramda';
-import { from, map, mergeMap } from 'rxjs';
+import { from, map, mergeMap, toArray } from 'rxjs';
 import { gridH, gridW, nodeColors, gridSet } from './grid';
 import { range } from './helpers';
 import type { Node } from './types';
@@ -52,4 +52,5 @@ export const drawIsles = from(islesX).pipe(
     ...range(py, py + height - 1).map((y) => pair(px + 1, y)),
   ]),
   map(([x, y]) => gridSet([x, y], wall)),
+  toArray(),
 );

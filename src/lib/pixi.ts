@@ -1,15 +1,22 @@
 import { Application, Graphics, Text } from 'pixi.js';
 import {
+  animationFrames,
+  concat,
   fromEvent,
   map,
   merge,
   mergeAll,
   mergeMap,
+  of,
   pipe,
+  reduce,
+  scan,
   tap,
+  throttleTime,
+  toArray,
 } from 'rxjs';
 
-import { applyTo, compose } from 'ramda';
+import { applyTo } from 'ramda';
 import {
   screenW,
   screenH,
@@ -17,14 +24,21 @@ import {
   cellW,
   cellH,
   gridGet,
-  calcPath,
-  startNode,
 } from './grid';
-import { foldGrid, pair } from './helpers';
+import { foldGrid, pair, tapLog } from './helpers';
 import type { Node } from './types';
 
 import { drawIsles } from './isles';
 import { drawSlots } from './listing';
+import { cart } from '../stores';
+
+const draws = concat(drawIsles, drawSlots).pipe(foldGrid);
+draws
+  .pipe(
+    map(applyTo(grid.value)),
+    tap((g) => grid.next([...g])),
+  )
+  .subscribe();
 
 const nodeFromClick = pipe(
   map(({ offsetX, offsetY }: MouseEvent) =>
@@ -33,10 +47,9 @@ const nodeFromClick = pipe(
       Math.floor(offsetY / cellH),
     ),
   ),
-  mergeMap((e) => grid.pipe(map(compose(applyTo(e), gridGet)))),
+  map(gridGet),
+  map(applyTo(grid.value)),
 );
-// grid -> gridGet(grid) -> coords -> node
-const calcPath$ = calcPath(pair(startNode, startNode));
 
 const drawNode = (gfx: Graphics) => (node: Node) => {
   const { x, y, color, f, g, h, text, px, py } = node;
@@ -97,24 +110,15 @@ export const startPixi = async (view: HTMLCanvasElement) => {
 
   app.stage.addChild(gph);
 
-  click$.pipe(nodeFromClick, tap(console.warn)).subscribe();
+  click$.pipe(nodeFromClick, tapLog()).subscribe();
 
-  const draws = merge(drawIsles, drawSlots);
-
-  grid
-    .pipe(mergeMap(foldGrid(draws)), mergeAll())
-    .subscribe((a) => drawNode(gph)(a));
+  grid.pipe(mergeAll()).subscribe(drawNode(gph));
 
   // animationFrames()
   //   .pipe(
   //     throttleTime(1000 / 2),
   //     mergeMap(() => grid),
-  //     mergeMap((g) => {
-  //       drawSlots(g).subscribe(console.log);
-
-  //       return of(g);
-  //     }),
-  //     tapLog('warn'),
+  //     mergeMap(foldGrid(draws)),
   //     mergeAll(),
   //   )
   //   .subscribe(drawNode(gph));
