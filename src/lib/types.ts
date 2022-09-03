@@ -1,6 +1,8 @@
 import { type Text } from 'pixi.js';
 import { BehaviorSubject } from 'rxjs';
 
+export type Coords = [number, number];
+
 export type Node = {
   f: number;
   g: number;
@@ -9,7 +11,7 @@ export type Node = {
   y: number;
   px: number;
   py: number;
-  coords: [number, number];
+  coords: Coords;
   isPath: boolean;
   color: number;
   parent: Node | null;

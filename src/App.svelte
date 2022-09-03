@@ -26,7 +26,7 @@
   import { assert } from './lib/helpers';
   import type { Node } from './lib/types';
   import { pair } from 'ramda';
-  import shuffleArray from 'shuffle-array';
+  // import shuffleArray from 'shuffle-array';
 
   let canvas: HTMLCanvasElement;
   let search = '';
@@ -50,13 +50,13 @@
     ),
     take($slots.length),
     toArray(),
-    map((data) => shuffleArray(data)),
+    // map((data) => shuffleArray(data)),
   );
 
   $: f = (a: Node | number): number => {
     return typeof a === 'number'
       ? a
-      : astar([...$grid])([startNode, a]).length;
+      : astar([startNode, a])($grid).length;
   };
 
   $: paths = [...$cart.values()]
@@ -70,15 +70,13 @@
 
   $: from([pair(0, 0), ...paths])
     .pipe(
-      // skip(paths.length - 1),
-      map(gridGet),
-      map((f) => f($grid)),
+      map((c) => gridGet(c)($grid)),
       pairwise(),
-      calcPath,
+      calcPath($grid),
     )
     .subscribe(console.warn);
 
-  $: console.log(123, gridGet([1, 2])($grid));
+  $: console.log(123, gridGet([1, 2])($grid), paths);
 </script>
 
 <main class="container mx-auto">

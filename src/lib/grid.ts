@@ -8,7 +8,7 @@ import {
 } from 'rxjs';
 import { astar } from './astar';
 import { assert } from './helpers';
-import type { Grid, Node } from './types';
+import type { Coords, Grid, Node } from './types';
 
 export const nodeColors = {
   start: 0x00ff00,
@@ -59,14 +59,6 @@ const makeGrid = (): Grid => {
 
 export const grid = new BehaviorSubject<Grid>(makeGrid());
 
-console.table({
-  size,
-  gridW,
-  gridH,
-  cellW,
-  cellH,
-});
-
 export const gridSet =
   ([x, y]: [number, number], value: Partial<Node>) =>
   (g: Grid): Grid => {
@@ -92,24 +84,24 @@ gridSet([0, 0], {
 })(grid.value);
 export const startNode = gridGet([0, 0])(grid.value);
 
-export const calcPath = pipe(
-  map((ns: [Node, Node]) => astar([...grid.value])(ns)),
-  mergeAll(),
-  tap((node) => {
-    if (
-      node.color !== nodeColors.end &&
-      node.color !== nodeColors.start &&
-      node.color !== nodeColors.slot
-    )
-      grid.next(
-        gridSet(node.coords, { color: 0x0000ff })(grid.value),
-      );
-  }),
-  toArray(),
-);
+export const calcPath = (g: Grid) =>
+  pipe(
+    map((ns: [Node, Node]) => astar(ns)(g)),
+    mergeAll(),
+    tap((node) => {
+      if (
+        node.color !== nodeColors.end &&
+        node.color !== nodeColors.start &&
+        node.color !== nodeColors.slot
+      )
+        grid.next(
+          gridSet(node.coords, { color: 0x0000ff })(grid.value),
+        );
+    }),
+    toArray(),
+  );
 
-export const getNeighbors = (n: Node) => {
-  const [px, py] = n.coords;
+export const getNeighbors = ([px, py]: Coords) => {
   const getters: ((g: Grid) => Node)[] = [];
 
   for (let i = -1; i <= 1; i++) {
