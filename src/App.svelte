@@ -47,7 +47,7 @@
     filter(
       (p) => p.name?.includes(search) && !$cart.has(p.name),
     ),
-    take($slots.length),
+    take($slots?.length),
     toArray(),
     // map((data) => shuffleArray(data)),
   );

@@ -6,15 +6,11 @@ import {
   map,
   mergeAll,
   zipWith,
-  withLatestFrom,
-  combineLatestWith,
-  find,
   toArray,
 } from 'rxjs';
 import { getData } from '../dataset';
 import { cart } from '../stores';
 import { gridSet, nodeColors } from './grid';
-import { mergeCombine, tapLog } from './helpers';
 import { islesX, height, islesY } from './isles';
 
 export const slots$ = getData().pipe(

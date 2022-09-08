@@ -2,12 +2,15 @@ import { from, map, of } from 'rxjs';
 import { parse } from './lib/helpers';
 import type { CSVRecord, Product } from './lib/types';
 
+let imp: Promise<{ default: string }>;
+
 export const getData = () => {
   const cache = localStorage.getItem('data');
   if (cache) return of(JSON.parse(cache) as Product[]);
 
-  // eslint-disable-next-line import/no-unresolved
-  return from(import('../dataset.csv?raw')).pipe(
+  imp = imp || import('../dataset.csv?raw');
+
+  return from(imp).pipe(
     map((m) => m.default),
     map((data) =>
       parse<CSVRecord>(data).map((r, index) => ({
