@@ -50,7 +50,7 @@
   );
 
   $: total = $source
-    .filter((p) => $cart.has(p.name))
+    ?.filter((p) => $cart.has(p.name))
     .reduce((acc, p) => acc + p.price, 0)
     .toFixed(2);
 
