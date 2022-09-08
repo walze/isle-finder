@@ -6,7 +6,7 @@ const getData = () => {
   const cache = localStorage.getItem('data');
   if (cache) return of(JSON.parse(cache) as Product[]);
 
-  return from(fetch('/dataset.csv')).pipe(
+  return from(fetch('./dataset.csv')).pipe(
     mergeMap((r) => r.clone().text()),
     map((data) =>
       parse<CSVRecord>(data).map((r, index) => ({
