@@ -1,16 +1,13 @@
-import { from, map, of } from 'rxjs';
+import { from, map, mergeMap, Observable, of } from 'rxjs';
 import { parse } from './lib/helpers';
 import type { CSVRecord, Product } from './lib/types';
 
-let imp: Promise<string>;
-
-export const getData = () => {
+const getData = () => {
   const cache = localStorage.getItem('data');
   if (cache) return of(JSON.parse(cache) as Product[]);
 
-  imp = imp || fetch('/dataset.csv').then((r) => r.text());
-
-  return from(imp).pipe(
+  return from(fetch('/dataset.csv')).pipe(
+    mergeMap((r) => r.clone().text()),
     map((data) =>
       parse<CSVRecord>(data).map((r, index) => ({
         price: +(+r.Member_number / 1000).toFixed(2),
@@ -33,4 +30,10 @@ export const getData = () => {
       return d;
     }),
   );
+};
+
+let data: Observable<Product[]>;
+export default () => {
+  if (!data) data = getData();
+  return data;
 };

@@ -2,7 +2,7 @@
   import './App.css';
 
   import { onMount } from 'svelte';
-  import { getData } from './dataset';
+  import getData from './dataset';
   import { cart } from './stores';
   import {
     filter,

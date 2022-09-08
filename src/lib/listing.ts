@@ -8,7 +8,7 @@ import {
   zipWith,
   toArray,
 } from 'rxjs';
-import { getData } from '../dataset';
+import getData from '../dataset';
 import { cart } from '../stores';
 import { gridSet, nodeColors } from './grid';
 import { islesX, height, islesY } from './isles';
