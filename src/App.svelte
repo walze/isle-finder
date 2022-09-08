@@ -9,9 +9,10 @@
     from,
     identity,
     map,
+    mergeAll,
     mergeMap,
+    of,
     pairwise,
-    reduce,
     take,
     toArray,
   } from 'rxjs';
@@ -23,13 +24,14 @@
     startNode,
     grid,
   } from './lib/grid';
-  import { assert } from './lib/helpers';
+  import { assert$ } from './lib/helpers';
   import { pair } from 'ramda';
   // import shuffleArray from 'shuffle-array';
 
   let canvas: HTMLCanvasElement;
   let search = '';
   const slots = slots$.pipe(toArray());
+  const source = getData();
 
   onMount(async () => {
     const { startPixi } = await import('./lib/pixi');
@@ -37,12 +39,7 @@
     startPixi(canvas);
   });
 
-  $: total = from($cart.values()).pipe(
-    reduce((n, item) => n + item, ''),
-    // map((n) => n.toFixed(2)),
-  );
-
-  $: data = getData().pipe(
+  $: data = source.pipe(
     mergeMap(identity),
     filter(
       (p) => p.name?.includes(search) && !$cart.has(p.name),
@@ -52,20 +49,27 @@
     // map((data) => shuffleArray(data)),
   );
 
-  $: paths = [...$cart.values()]
-    .map((p) => $slots.find(([name]) => name === p))
-    .map((a) => {
-      assert(a, 'product not found');
+  $: total = $source
+    .filter((p) => $cart.has(p.name))
+    .reduce((acc, p) => acc + p.price, 0)
+    .toFixed(2);
 
-      return a[1];
-    })
-    .sort(
-      (a, b) =>
-        astar([startNode, gridGet(a)($grid)])($grid).length -
-        astar([startNode, gridGet(b)($grid)])($grid).length,
-    );
+  $: paths = of($cart).pipe(
+    mergeAll(),
+    map((p) => $slots.find(([name]) => name === p)),
+    assert$('Product not found'),
+    map(([, slot]) => slot),
+    toArray(),
+    map((xs) =>
+      xs.sort(
+        (a, b) =>
+          astar([startNode, gridGet(a)($grid)])($grid).length -
+          astar([startNode, gridGet(b)($grid)])($grid).length,
+      ),
+    ),
+  );
 
-  $: from([pair(0, 0), ...paths])
+  $: from([pair(0, 0), ...($paths || [])])
     .pipe(
       map((c) => gridGet(c)($grid)),
       pairwise(),
@@ -73,7 +77,7 @@
     )
     .subscribe(console.warn);
 
-  $: console.log(123, gridGet([1, 2])($grid), paths);
+  $: console.log(123, gridGet([1, 2])($grid), $paths);
 </script>
 
 <main class="container mx-auto">
@@ -89,7 +93,7 @@
   />
 
   <h2 class="text-3xl mb-2 mt-1">
-    total: ${$total}
+    total: ${total}
   </h2>
 
   <ul class="overflow-scroll max-h-60">

@@ -1,14 +1,12 @@
+import type { AnyFunction } from 'ramda';
 import {
-  ap,
-  apply,
-  applyTo,
-  juxt,
-  pipe,
-  reduce,
-  type AnyFunction,
-} from 'ramda';
-import { map, mergeMap, Observable, tap } from 'rxjs';
-import type { Grid, Node, NonEmptyArray } from './types';
+  map,
+  mergeMap,
+  Observable,
+  tap,
+  type OperatorFunction,
+} from 'rxjs';
+import type { Grid, NonEmptyArray } from './types';
 
 export const pair = <A, B>(a: A, b: B): [A, B] => [a, b];
 
@@ -30,6 +28,14 @@ export const assert: Assert = (value, message) => {
       : new Error(message || 'Assertion failed');
   }
 };
+
+export const assert$ =
+  <T>(
+    message?: string | Error,
+  ): OperatorFunction<T, NonNullable<T>> =>
+  (o) =>
+    // @ts-ignore
+    o.pipe(tap((t) => assert(t, message)));
 
 export const parse = <T extends Record<string, unknown>>(
   csv: string,
