@@ -24,7 +24,6 @@
     grid,
   } from './lib/grid';
   import { assert } from './lib/helpers';
-  import type { Node } from './lib/types';
   import { pair } from 'ramda';
   // import shuffleArray from 'shuffle-array';
 
@@ -53,12 +52,6 @@
     // map((data) => shuffleArray(data)),
   );
 
-  $: f = (a: Node | number): number => {
-    return typeof a === 'number'
-      ? a
-      : astar([startNode, a])($grid).length;
-  };
-
   $: paths = [...$cart.values()]
     .map((p) => $slots.find(([name]) => name === p))
     .map((a) => {
@@ -66,7 +59,11 @@
 
       return a[1];
     })
-    .sort((a, b) => f(gridGet(a)($grid)) - f(gridGet(b)($grid)));
+    .sort(
+      (a, b) =>
+        astar([startNode, gridGet(a)($grid)])($grid).length -
+        astar([startNode, gridGet(b)($grid)])($grid).length,
+    );
 
   $: from([pair(0, 0), ...paths])
     .pipe(
