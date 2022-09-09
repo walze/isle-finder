@@ -19,6 +19,7 @@
   import { calcPath, startNode, grid } from './lib/grid';
   import { assert$ } from './lib/helpers';
   import shuffleArray from 'shuffle-array';
+  import type { Coords } from './lib/types';
 
   let canvas: HTMLCanvasElement;
   let search = '';
@@ -47,20 +48,34 @@
   $: paths = from($cart).pipe(
     map((p) => $slots.find(([name]) => name === p)),
     assert$(),
-    map(([, slot]) => slot),
+    map(([, slot]) => slot as Coords),
     toArray(),
-    map((xs) =>
-      xs.sort(
-        (a, b) =>
-          astar([startNode.coords, a])([...grid.value]).length -
-          astar([startNode.coords, b])([...grid.value]).length,
-      ),
-    ),
+    map((ps) => {
+      const nps = [startNode.coords];
+      let current = nps[nps.length - 1] as Coords | undefined;
+
+      while (current) {
+        const [, i] = ps
+          .map(
+            (p) => astar([current!, p])([...grid.value]).length,
+          )
+          .reduce(
+            ([d, i], nd, ni) => (nd < d ? [nd, ni] : [d, i]),
+            [Infinity, -1] as Coords,
+          );
+
+        current = ps[i];
+        if (!current) break;
+
+        nps.push(current);
+        ps.splice(i, 1);
+      }
+
+      return nps;
+    }),
   );
 
-  $: from([startNode.coords, ...$paths])
-    .pipe(pairwise(), calcPath)
-    .subscribe();
+  $: from($paths).pipe(pairwise(), calcPath).subscribe();
 </script>
 
 <main class="container mx-auto">
