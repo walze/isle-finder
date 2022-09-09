@@ -1,12 +1,15 @@
 import {
   BehaviorSubject,
+  concatMap,
+  delay,
   mergeMap,
+  of,
   pipe,
   tap,
   toArray,
 } from 'rxjs';
 import { hsl } from 'color-convert';
-import { astar, manhattan } from './astar';
+import { astar } from './astar';
 import { assert } from './helpers';
 import type { Coords, Grid, Node } from './types';
 
@@ -95,22 +98,16 @@ export const modColor = (mod: number) => {
   return parseInt(hsl.hex([h, 75, 50]), 16);
 };
 
-export const paintPath = tap((nodes: Node[]) =>
-  grid.next(
-    nodes
-      .sort(
-        ({ coords: [ax, ay] }, { coords: [bx, by] }) =>
-          manhattan(startNode.px - ax, startNode.py - ay) -
-          manhattan(startNode.px - bx, startNode.py - by),
-      )
-      .reduce(
-        (g, n, i) =>
-          gridSet(n.coords, {
-            color: modColor((i / nodes.length / 2) * 360),
-          })(g),
-        [...grid.value],
-      ),
+export const paintPath = pipe(
+  concatMap((nodes: Node[]) =>
+    nodes.map((n, i) =>
+      gridSet(n.coords, {
+        color: modColor((i / nodes.length / 2) * 360),
+      }),
+    ),
   ),
+  concatMap((f) => of(f(grid.value)).pipe(delay(20))),
+  tap((g) => grid.next(g)),
 );
 
 export const calcPath = pipe(

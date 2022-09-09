@@ -60,9 +60,7 @@
 
   $: from([startNode.coords, ...$paths])
     .pipe(pairwise(), calcPath)
-    .subscribe((_) => {
-      // _.map((n) => console.log(n.coords));
-    });
+    .subscribe();
 </script>
 
 <main class="container mx-auto">

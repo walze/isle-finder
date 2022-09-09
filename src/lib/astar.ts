@@ -63,7 +63,7 @@ export const astar: Astar =
     }
 
     if (equals(node.coords, goal.coords))
-      return reconstructPath(node);
+      return reconstructPath(node).reverse();
 
     const neighbors = getNeighbors(node.coords)
       .filter((getN) => {

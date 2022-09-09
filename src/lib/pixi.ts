@@ -1,5 +1,12 @@
 import { Application, Graphics, Text } from 'pixi.js';
-import { concat, fromEvent, map, pipe, tap } from 'rxjs';
+import {
+  concat,
+  fromEvent,
+  map,
+  mergeAll,
+  pipe,
+  tap,
+} from 'rxjs';
 
 import { applyTo } from 'ramda';
 import {
@@ -98,16 +105,7 @@ export const startPixi = async (view: HTMLCanvasElement) => {
   grid
     .pipe(
       tap(() => gph.clear()),
-      tap((g) => g.map(drawNode(gph))),
+      mergeAll(),
     )
-    .subscribe();
-
-  // animationFrames()
-  //   .pipe(
-  //     throttleTime(1000 / 2),
-  //     mergeMap(() => grid),
-  //     mergeMap(foldGrid(draws)),
-  //     mergeAll(),
-  //   )
-  //   .subscribe(drawNode(gph));
+    .subscribe(drawNode(gph));
 };
