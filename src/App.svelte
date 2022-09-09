@@ -7,40 +7,29 @@
   import {
     filter,
     from,
-    identity,
     map,
     mergeAll,
-    mergeMap,
-    of,
     pairwise,
+    reduce,
     take,
     toArray,
   } from 'rxjs';
   import { slots$ } from './lib/listing';
-  import { astar } from './lib/astar';
-  import {
-    calcPath,
-    gridGet,
-    startNode,
-    grid,
-  } from './lib/grid';
+  import { pythagoras } from './lib/astar';
+  import { calcPath, startNode, grid } from './lib/grid';
   import { assert$ } from './lib/helpers';
-  import { pair } from 'ramda';
   // import shuffleArray from 'shuffle-array';
 
   let canvas: HTMLCanvasElement;
   let search = '';
   const slots = slots$.pipe(toArray());
-  const source = getData();
+  const source = mergeAll()(getData());
 
   onMount(async () => {
-    const { startPixi } = await import('./lib/pixi');
-
-    startPixi(canvas);
+    import('./lib/pixi').then(({ startPixi: f }) => f(canvas));
   });
 
   $: data = source.pipe(
-    mergeMap(identity),
     filter(
       (p) => p.name?.includes(search) && !$cart.has(p.name),
     ),
@@ -49,35 +38,31 @@
     // map((data) => shuffleArray(data)),
   );
 
-  $: total = $source
-    ?.filter((p) => $cart.has(p.name))
-    .reduce((acc, p) => acc + p.price, 0)
-    .toFixed(2);
+  $: total = source.pipe(
+    filter((p) => $cart.has(p.name)),
+    reduce((acc, p) => acc + p.price, 0),
+    map((p) => p.toFixed(2)),
+  );
 
-  $: paths = of($cart).pipe(
-    mergeAll(),
+  $: paths = from($cart).pipe(
     map((p) => $slots.find(([name]) => name === p)),
-    assert$('Product not found'),
+    assert$(),
     map(([, slot]) => slot),
     toArray(),
     map((xs) =>
       xs.sort(
-        (a, b) =>
-          astar([startNode, gridGet(a)($grid)])($grid).length -
-          astar([startNode, gridGet(b)($grid)])($grid).length,
+        ([ax, ay], [bx, by]) =>
+          pythagoras(startNode.px - ax, startNode.py - ay) -
+          pythagoras(startNode.px - bx, startNode.py - by),
       ),
     ),
   );
 
-  $: from([pair(0, 0), ...($paths || [])])
-    .pipe(
-      map((c) => gridGet(c)($grid)),
-      pairwise(),
-      calcPath($grid),
-    )
-    .subscribe(console.warn);
+  $: from([startNode.coords, ...($paths || [])])
+    .pipe(pairwise(), calcPath($grid))
+    .subscribe();
 
-  $: console.log(123, gridGet([1, 2])($grid), $paths);
+  $: console.log('PATHS', $paths);
 </script>
 
 <main class="container mx-auto">
@@ -95,7 +80,7 @@
   />
 
   <h2 class="text-3xl mb-2 mt-1">
-    total: ${total}
+    total: ${$total}
   </h2>
 
   <ul class="overflow-scroll max-h-60">

@@ -1,6 +1,6 @@
 import { equals } from 'ramda';
-import { getNeighbors, gridSet } from './grid';
-import type { Node, Grid } from './types';
+import { getNeighbors, gridGet, gridSet } from './grid';
+import type { Node, Grid, Coords } from './types';
 
 export const pythagoras = (a: number, b: number) =>
   Math.sqrt(a ** 2 + b ** 2);
@@ -8,15 +8,15 @@ export const pythagoras = (a: number, b: number) =>
 export const manhattan = (a: number, b: number) =>
   Math.abs(a) + Math.abs(b);
 
-const isDiagonal = (a: Node, b: Node) =>
-  a.x !== b.x && a.y !== b.y;
+const isDiagonal = ([ax, ay]: Coords, [bx, by]: Coords) =>
+  ax !== bx && ay !== by;
 
 export const calcScores = (
   current: Node,
   neighbor: Node,
   goal: Node,
 ) => {
-  const d = isDiagonal(current, neighbor)
+  const d = isDiagonal(current.coords, neighbor.coords)
     ? pythagoras(neighbor.px - goal.px, neighbor.py - goal.py) *
       (4 / 3)
     : pythagoras(neighbor.px - goal.px, neighbor.py - goal.py);
@@ -40,15 +40,19 @@ const reconstructPath = (
     : reconstructPath(node.parent, [...path, node]);
 
 type Astar = (
-  path: [Node, Node],
+  path: [Coords, Coords],
   queue?: Grid,
   seen?: Node[],
 ) => (grid: Grid) => Node[];
 
 export const astar: Astar =
-  ([start, goal], q = [start], s = []) =>
+  ([a, b], _q, s = []) =>
   (grid) => {
+    const start = gridGet(a)(grid);
+    const goal = gridGet(b)(grid);
+    const q = _q || [start];
     start.g = 0;
+
     const [node, ...queue] = q.sort((a, b) => a.f - b.f);
     const seen = [...s, node];
 
@@ -79,7 +83,7 @@ export const astar: Astar =
       .map((getN) => ({ ...getN(grid) }));
 
     return astar(
-      [start, goal],
+      [a, b],
       [...queue, ...neighbors] as Grid,
       seen,
     )(grid);

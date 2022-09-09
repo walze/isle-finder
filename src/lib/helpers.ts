@@ -16,17 +16,22 @@ export const range = (start: number, stop: number, step = 1) =>
     (_, i) => start + i * step,
   );
 
-type Assert = <T>(
-  value: T,
-  message?: string | Error,
-) => asserts value;
+class AssertionError extends Error {
+  constructor(value: unknown, message?: string) {
+    super(message, {
+      cause: value,
+    });
 
-export const assert: Assert = (value, message) => {
-  if (!value) {
-    throw message instanceof Error
-      ? message
-      : new Error(message || 'Assertion failed');
+    this.name = 'AssertionError';
+
+    console.error(message || 'Uncaught assertion', '=>', value);
   }
+}
+
+type Assert = <T>(value: T, message?: string) => asserts value;
+
+export const assert: Assert = (value, text) => {
+  if (!value) throw new AssertionError(value, text);
 };
 
 export const assert$ =

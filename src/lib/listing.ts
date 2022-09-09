@@ -43,5 +43,3 @@ export const drawSlots = cart.pipe(
     ),
   ),
 );
-
-console.table({ islesX, islesY, height, slots$ });

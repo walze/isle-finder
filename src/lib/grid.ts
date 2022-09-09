@@ -1,11 +1,4 @@
-import {
-  BehaviorSubject,
-  map,
-  mergeAll,
-  pipe,
-  tap,
-  toArray,
-} from 'rxjs';
+import { BehaviorSubject, map, mergeAll, pipe, tap } from 'rxjs';
 import { astar } from './astar';
 import { assert } from './helpers';
 import type { Coords, Grid, Node } from './types';
@@ -26,6 +19,8 @@ const size = 20;
 
 export const [gridW, gridH] = [size, size];
 export const [cellW, cellH] = [screenW / gridW, screenH / gridH];
+
+export const startNodeCoords = [0, 0] as Coords;
 
 export const makeNode = (coords: [number, number]): Node => {
   const [x, y] = coords;
@@ -58,6 +53,7 @@ const makeGrid = (): Grid => {
 };
 
 export const grid = new BehaviorSubject<Grid>(makeGrid());
+grid.subscribe(console.log);
 
 export const gridSet =
   ([x, y]: [number, number], value: Partial<Node>) =>
@@ -77,16 +73,16 @@ export const gridGet =
     return { ...g[x * gridW + y] } as Node;
   };
 
-gridSet([0, 0], {
+gridSet(startNodeCoords, {
   color: nodeColors.start,
   g: 0,
   isPath: true,
 })(grid.value);
-export const startNode = gridGet([0, 0])(grid.value);
+export const startNode = gridGet(startNodeCoords)(grid.value);
 
 export const calcPath = (g: Grid) =>
   pipe(
-    map((ns: [Node, Node]) => astar(ns)(g)),
+    map((ns: [Coords, Coords]) => astar(ns)(g)),
     mergeAll(),
     tap((node) => {
       if (
@@ -98,7 +94,6 @@ export const calcPath = (g: Grid) =>
           gridSet(node.coords, { color: 0x0000ff })(grid.value),
         );
     }),
-    toArray(),
   );
 
 export const getNeighbors = ([px, py]: Coords) => {
