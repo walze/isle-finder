@@ -1,19 +1,11 @@
 import { Application, Graphics, Text } from 'pixi.js';
 import {
-  animationFrames,
   concat,
   fromEvent,
   map,
-  merge,
   mergeAll,
-  mergeMap,
-  of,
   pipe,
-  reduce,
-  scan,
   tap,
-  throttleTime,
-  toArray,
 } from 'rxjs';
 
 import { applyTo } from 'ramda';
@@ -30,7 +22,6 @@ import type { Node } from './types';
 
 import { drawIsles } from './isles';
 import { drawSlots } from './listing';
-import { cart } from '../stores';
 
 const draws = concat(drawIsles, drawSlots).pipe(foldGrid);
 draws

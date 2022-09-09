@@ -19,8 +19,8 @@ export const nodeColors = {
   inCart: 0xffff00,
 };
 
-export const screenW = 1080;
-export const screenH = 1080;
+export const screenW = Math.min(window.innerWidth, 1280);
+export const screenH = Math.min(window.innerWidth, 1280);
 
 const size = 20;
 
