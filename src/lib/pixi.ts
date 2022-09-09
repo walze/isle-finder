@@ -1,12 +1,5 @@
 import { Application, Graphics, Text } from 'pixi.js';
-import {
-  concat,
-  fromEvent,
-  map,
-  mergeAll,
-  pipe,
-  tap,
-} from 'rxjs';
+import { concat, fromEvent, map, pipe, tap } from 'rxjs';
 
 import { applyTo } from 'ramda';
 import {
@@ -42,13 +35,14 @@ const nodeFromClick = pipe(
   map(applyTo(grid.value)),
 );
 
+const texts = {} as Record<string, Text>;
 const drawNode = (gfx: Graphics) => (node: Node) => {
-  const { x, y, color, f, g, h, text, px, py } = node;
+  const { x, y, color, f, g, h, px, py, coords } = node;
   gfx.beginFill(color);
   const padding = 0.5;
 
-  const t =
-    text ||
+  texts[coords.toString()] =
+    texts[coords.toString()] ||
     new Text('', {
       fontWeight: '100',
       fill: 0xeeeeee,
@@ -59,21 +53,19 @@ const drawNode = (gfx: Graphics) => (node: Node) => {
       align: 'center',
     });
 
-  t.text = `(${px} , ${py})\n${[h, g, f]
+  const text = texts[coords.toString()] as Text;
+
+  text.text = `(${px} , ${py})\n${[h, g, f]
     .map(Math.round)
     .map((n, i) =>
       +n === Number.MAX_SAFE_INTEGER ? '' : `${'hgf'[i]} : ${n}`,
     )
     .join('\n')}`;
 
-  t.x = x;
-  t.y = y;
+  text.x = x;
+  text.y = y;
 
-  node.text = t;
-
-  if (!text) {
-    gfx.addChild(t);
-  }
+  // gfx.addChild(text);
 
   gfx.drawRect(
     x + padding,
@@ -103,7 +95,12 @@ export const startPixi = async (view: HTMLCanvasElement) => {
 
   click$.pipe(nodeFromClick, tapLog()).subscribe();
 
-  grid.pipe(mergeAll()).subscribe(drawNode(gph));
+  grid
+    .pipe(
+      tap(() => gph.clear()),
+      tap((g) => g.map(drawNode(gph))),
+    )
+    .subscribe();
 
   // animationFrames()
   //   .pipe(

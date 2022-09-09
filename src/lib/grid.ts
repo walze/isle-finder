@@ -1,6 +1,13 @@
-import { BehaviorSubject, map, mergeAll, pipe, tap } from 'rxjs';
-import { astar } from './astar';
-import { assert } from './helpers';
+import {
+  BehaviorSubject,
+  mergeMap,
+  pipe,
+  tap,
+  toArray,
+} from 'rxjs';
+import { hex, hsl } from 'color-convert';
+import { astar, manhattan } from './astar';
+import { assert, tapLog } from './helpers';
 import type { Coords, Grid, Node } from './types';
 
 export const nodeColors = {
@@ -39,7 +46,6 @@ export const makeNode = (coords: [number, number]): Node => {
     parent: null,
     isPath,
     color: isPath ? nodeColors.path : nodeColors.wall,
-    text: null,
   };
 };
 
@@ -53,7 +59,6 @@ const makeGrid = (): Grid => {
 };
 
 export const grid = new BehaviorSubject<Grid>(makeGrid());
-grid.subscribe(console.log);
 
 export const gridSet =
   ([x, y]: [number, number], value: Partial<Node>) =>
@@ -73,28 +78,46 @@ export const gridGet =
     return { ...g[x * gridW + y] } as Node;
   };
 
-gridSet(startNodeCoords, {
-  color: nodeColors.start,
-  g: 0,
-  isPath: true,
-})(grid.value);
 export const startNode = gridGet(startNodeCoords)(grid.value);
 
-export const calcPath = (g: Grid) =>
-  pipe(
-    map((ns: [Coords, Coords]) => astar(ns)(g)),
-    mergeAll(),
-    tap((node) => {
-      if (
-        node.color !== nodeColors.end &&
-        node.color !== nodeColors.start &&
-        node.color !== nodeColors.slot
+export const batchSetGrid =
+  (value: Partial<Node>) => (nodes: Node[]) =>
+    grid.next(
+      nodes.reduce(
+        (g, n) => gridSet(n.coords, value)(g),
+        [...grid.value],
+      ),
+    );
+
+export const modColor = (mod: number) => {
+  const h = Math.floor(mod / 2);
+
+  return parseInt(hsl.hex([h, 75, 50]), 16);
+};
+
+export const paintPath = tap((nodes: Node[]) =>
+  grid.next(
+    nodes
+      .sort(
+        ({ coords: [ax, ay] }, { coords: [bx, by] }) =>
+          manhattan(startNode.px - ax, startNode.py - ay) -
+          manhattan(startNode.px - bx, startNode.py - by),
       )
-        grid.next(
-          gridSet(node.coords, { color: 0x0000ff })(grid.value),
-        );
-    }),
-  );
+      .reduce(
+        (g, n, i) =>
+          gridSet(n.coords, {
+            color: modColor((i / nodes.length / 2) * 360),
+          })(g),
+        [...grid.value],
+      ),
+  ),
+);
+
+export const calcPath = pipe(
+  mergeMap((ns: [Coords, Coords]) => astar(ns)([...grid.value])),
+  toArray(),
+  paintPath,
+);
 
 export const getNeighbors = ([px, py]: Coords) => {
   const getters: ((g: Grid) => Node)[] = [];

@@ -24,6 +24,7 @@ class AssertionError extends Error {
 
     this.name = 'AssertionError';
 
+    // eslint-disable-next-line no-console
     console.error(message || 'Uncaught assertion', '=>', value);
   }
 }
@@ -39,7 +40,7 @@ export const assert$ =
     message?: string | Error,
   ): OperatorFunction<T, NonNullable<T>> =>
   (o) =>
-    // @ts-ignore
+    // @ts-expect-error yes
     o.pipe(tap((t) => assert(t, message)));
 
 export const parse = <T extends Record<string, unknown>>(

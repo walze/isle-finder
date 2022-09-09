@@ -1,4 +1,3 @@
-import { type Text } from 'pixi.js';
 import { BehaviorSubject } from 'rxjs';
 
 export type Coords = [number, number];
@@ -15,7 +14,6 @@ export type Node = {
   isPath: boolean;
   color: number;
   parent: Node | null;
-  text: Text | null;
 };
 
 export type NonEmptyArray<T> = [T, ...T[]];

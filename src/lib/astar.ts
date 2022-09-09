@@ -17,9 +17,9 @@ export const calcScores = (
   goal: Node,
 ) => {
   const d = isDiagonal(current.coords, neighbor.coords)
-    ? pythagoras(neighbor.px - goal.px, neighbor.py - goal.py) *
+    ? manhattan(neighbor.px - goal.px, neighbor.py - goal.py) *
       (4 / 3)
-    : pythagoras(neighbor.px - goal.px, neighbor.py - goal.py);
+    : manhattan(neighbor.px - goal.px, neighbor.py - goal.py);
 
   const g = current.g + d;
   const h = manhattan(
@@ -53,7 +53,7 @@ export const astar: Astar =
     const q = _q || [start];
     start.g = 0;
 
-    const [node, ...queue] = q.sort((a, b) => a.f - b.f);
+    const [node, ...queue] = q.sort((n1, n2) => n1.f - n2.f);
     const seen = [...s, node];
 
     if (!node) {

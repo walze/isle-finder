@@ -15,10 +15,10 @@
     toArray,
   } from 'rxjs';
   import { slots$ } from './lib/listing';
-  import { pythagoras } from './lib/astar';
-  import { calcPath, startNode, grid } from './lib/grid';
+  import { manhattan } from './lib/astar';
+  import { calcPath, startNode } from './lib/grid';
   import { assert$ } from './lib/helpers';
-  // import shuffleArray from 'shuffle-array';
+  import shuffleArray from 'shuffle-array';
 
   let canvas: HTMLCanvasElement;
   let search = '';
@@ -33,9 +33,9 @@
     filter(
       (p) => p.name?.includes(search) && !$cart.has(p.name),
     ),
-    take($slots?.length),
+    take($slots?.length - 1),
     toArray(),
-    // map((data) => shuffleArray(data)),
+    map((data) => shuffleArray(data)),
   );
 
   $: total = source.pipe(
@@ -52,17 +52,17 @@
     map((xs) =>
       xs.sort(
         ([ax, ay], [bx, by]) =>
-          pythagoras(startNode.px - ax, startNode.py - ay) -
-          pythagoras(startNode.px - bx, startNode.py - by),
+          manhattan(startNode.px - ax, startNode.py - ay) -
+          manhattan(startNode.px - bx, startNode.py - by),
       ),
     ),
   );
 
-  $: from([startNode.coords, ...($paths || [])])
-    .pipe(pairwise(), calcPath($grid))
-    .subscribe();
-
-  $: console.log('PATHS', $paths);
+  $: from([startNode.coords, ...$paths])
+    .pipe(pairwise(), calcPath)
+    .subscribe((_) => {
+      // _.map((n) => console.log(n.coords));
+    });
 </script>
 
 <main class="container mx-auto">
