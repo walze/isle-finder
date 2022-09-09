@@ -5,9 +5,9 @@ import {
   tap,
   toArray,
 } from 'rxjs';
-import { hex, hsl } from 'color-convert';
+import { hsl } from 'color-convert';
 import { astar, manhattan } from './astar';
-import { assert, tapLog } from './helpers';
+import { assert } from './helpers';
 import type { Coords, Grid, Node } from './types';
 
 export const nodeColors = {
@@ -22,7 +22,7 @@ export const nodeColors = {
 export const screenW = Math.min(window.innerWidth, 1280);
 export const screenH = Math.min(window.innerWidth, 1280);
 
-const size = 20;
+const size = 30;
 
 export const [gridW, gridH] = [size, size];
 export const [cellW, cellH] = [screenW / gridW, screenH / gridH];
