@@ -66,8 +66,6 @@
 </script>
 
 <main class="container mx-auto">
-  <h1 class="my-8 text-4xl">The Isle Finder</h1>
-
   {#if !$data}
     <h2 class="text-8xl text-center my-20">loading...</h2>
   {/if}
