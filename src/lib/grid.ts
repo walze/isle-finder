@@ -99,7 +99,7 @@ export const modColor = (mod: number) => {
 };
 
 export const paintPath = pipe(
-  concatMap((nodes: Node[]) =>
+  mergeMap((nodes: Node[]) =>
     nodes.map((n, i) =>
       gridSet(n.coords, {
         color: modColor((i / nodes.length / 2) * 360),

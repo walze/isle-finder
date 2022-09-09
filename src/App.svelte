@@ -15,8 +15,8 @@
     toArray,
   } from 'rxjs';
   import { slots$ } from './lib/listing';
-  import { manhattan } from './lib/astar';
-  import { calcPath, startNode } from './lib/grid';
+  import { astar } from './lib/astar';
+  import { calcPath, startNode, grid } from './lib/grid';
   import { assert$ } from './lib/helpers';
   import shuffleArray from 'shuffle-array';
 
@@ -51,9 +51,9 @@
     toArray(),
     map((xs) =>
       xs.sort(
-        ([ax, ay], [bx, by]) =>
-          manhattan(startNode.px - ax, startNode.py - ay) -
-          manhattan(startNode.px - bx, startNode.py - by),
+        (a, b) =>
+          astar([startNode.coords, a])([...grid.value]).length -
+          astar([startNode.coords, b])([...grid.value]).length,
       ),
     ),
   );
